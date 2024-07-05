@@ -1,0 +1,25 @@
+---
+slug: /installation
+---
+
+# Installation
+
+First, you will need to install the [Rust toolchain](https://rustup.rs).
+
+You can install the Rue CLI with this command:
+
+```bash
+cargo install rue-cli
+```
+
+## VSCode
+
+Currently the only editor with support for Rue is [Visual Studio Code](https://code.visualstudio.com).
+
+Install the [Rue extension](https://example.com) for syntax highlighting and a built in LSP client for Rue files.
+
+You can install the Language Server with this command:
+
+```bash
+cargo install rue-lsp
+```
