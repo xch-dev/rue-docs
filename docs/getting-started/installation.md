@@ -12,6 +12,12 @@ You can install the Rue CLI with this command:
 cargo install rue-cli
 ```
 
+It's also useful to install [clvm_tools_rs](https://github.com/Chia-Network/clvm_tools_rs):
+
+```bash
+cargo install clvm_tools_rs
+```
+
 ## VSCode
 
 Currently the only editor with support for Rue is [Visual Studio Code](https://code.visualstudio.com).
