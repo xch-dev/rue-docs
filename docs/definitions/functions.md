@@ -87,7 +87,7 @@ A lambda function, also known as an [anonymous function](https://en.wikipedia.or
 It's convenient for passing functions as parameters:
 
 ```rue
-fun main() -> Int {
+fun main() -> Int[] {
     map([1, 2, 3], fun(num) => num * 100)
 }
 
@@ -106,7 +106,7 @@ You can define generic types on functions which will get replaced when called.
 Here's a simple example, building on the previous:
 
 ```rue
-fun main() -> Int {
+fun main() -> Int[] {
     map([1, 2, 3], fun(num) => num * 100)
 }
 
@@ -138,7 +138,7 @@ Here is an example of this:
 
 ```rue
 fun main() -> Int {
-    let doubler = fn(2);
+    let doubler = multiplier(2);
     doubler(1000)
 }
 

@@ -22,7 +22,7 @@ fun main() -> Int {
     let mode: Mode = locked;
 
     // Now we can check the type
-    if !(mode is Mode::Locked) {
+    if mode is Mode::Unlocked {
         raise "This isn't possible.";
     }
 
