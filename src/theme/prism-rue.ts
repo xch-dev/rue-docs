@@ -8,7 +8,7 @@ Prism.languages.rue = {
     alias: "function",
   },
   field: {
-    pattern: /\b[a-zA-Z_][a-zA-Z0-9_]*(?=\s*:)/,
+    pattern: /(?!\b(?:let|const))\b[a-zA-Z_][a-zA-Z0-9_]*(?=\s*:)/,
     alias: "property",
   },
   "field-access": {
@@ -18,8 +18,6 @@ Prism.languages.rue = {
   },
   string: {
     pattern: /"[^"]*"/,
-    lookbehind: true,
-    greedy: true,
   },
   comment: {
     pattern: /\/\/.*|\/\*[^]*?\*\//,
@@ -53,4 +51,5 @@ Prism.languages.rue = {
   },
   builtin: /\b(?:Int|Any|Bytes32|Bytes|PublicKey|Nil|Bool)\b/,
   "class-name": /\b[A-Z][a-z][a-zA-Z0-9_]*\b/,
+  constant: /\b[A-Z][A-Z0-9_]*\b/,
 };
