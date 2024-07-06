@@ -4,6 +4,10 @@ slug: /installation
 
 # Installation
 
+:::danger
+This is an alpha release of Rue. It should **NOT** be used for production use.
+:::
+
 First, you will need to install the [Rust toolchain](https://rustup.rs).
 
 You can install the Rue CLI with this command:
