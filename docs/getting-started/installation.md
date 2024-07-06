@@ -26,7 +26,7 @@ cargo install clvm_tools_rs
 
 Currently the only editor with support for Rue is [Visual Studio Code](https://code.visualstudio.com).
 
-Install the [Rue extension](https://example.com) for syntax highlighting and a built in LSP client for Rue files.
+Install the [Rue extension](https://marketplace.visualstudio.com/items?itemName=Rigidity.rue-language) for syntax highlighting and a built in LSP client for Rue files.
 
 You can install the Language Server with this command:
 
