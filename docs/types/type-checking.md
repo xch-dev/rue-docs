@@ -112,10 +112,9 @@ To achieve this, you can write your own recursive function to check instead:
 
 ```rue
 fun is_int_list(value: Any) -> Bool {
-    match value {
-        (Int, Any) => is_int_list(value.rest),
-        nil => true,
-        _ => false,
+    if value is Bytes {
+        return value == nil;
     }
+    value.first is Int && is_int_list(value.rest)
 }
 ```
