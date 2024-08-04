@@ -40,7 +40,7 @@ This is the exact same as writing the following:
 
 ```rue
 fun main() -> Int {
-    42 * 2
+    100 * 2
 }
 ```
 
