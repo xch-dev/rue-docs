@@ -87,12 +87,12 @@ A lambda function, also known as an [anonymous function](https://en.wikipedia.or
 It's convenient for passing functions as parameters:
 
 ```rue
-fun main() -> Int[] {
+fun main() -> List<Int> {
     map([1, 2, 3], fun(num) => num * 100)
 }
 
-fun map(list: Int[], mapper: fun(num: Int) -> Int) -> Int[] {
-    if list is (Int, Int[]) {
+fun map(list: List<Int>, mapper: fun(num: Int) -> Int) -> List<Int> {
+    if list is (Int, List<Int>) {
         return [mapper(list.first), ...map(list.rest, mapper)];
     }
     nil
@@ -106,12 +106,12 @@ You can define generic types on functions which will get replaced when called.
 Here's a simple example, building on the previous:
 
 ```rue
-fun main() -> Int[] {
+fun main() -> List<Int> {
     map([1, 2, 3], fun(num) => num * 100)
 }
 
-fun map<T>(list: T[], mapper: fun(num: T) -> T) -> T[] {
-    if list is (T, T[]) {
+fun map<T>(list: List<T>, mapper: fun(num: T) -> T) -> List<T> {
+    if list is (T, List<T>) {
         return [mapper(list.first), ...map(list.rest, mapper)];
     }
     nil

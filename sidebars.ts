@@ -21,7 +21,14 @@ const sidebars: SidebarsConfig = {
     {
       type: "category",
       label: "Types",
-      items: ["types/structs", "types/enums", "types/type-aliases"],
+      items: [
+        "types/type-system",
+        "types/type-checking",
+        "types/pair-types",
+        "types/structs",
+        "types/enums",
+        "types/type-aliases",
+      ],
       collapsed: false,
     },
   ],

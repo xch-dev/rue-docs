@@ -24,8 +24,9 @@ Prism.languages.rue = {
     multiline: true,
     greedy: true,
   },
-  number: /\b[0-9][0-9_]*\b/,
-  operator: /[+\-*?%!\^]|<[<=]?|>[>=]?|=[=>]?|!=?|\.(?:\.\.)?|::|->?|&&?|\|\|?/,
+  number: /\b(?:0[xX][0-9a-fA-F_]+|[0-9][0-9_]*)\b/,
+  operator:
+    /[+\-*?%!\^~]|<[<=]?|>[>=]?|=[=>]?|!=?|\.(?:\.\.)?|::|->?|&&?|\|\|?/,
   punctuation: /[(){}[\],:]/,
   "control-flow": {
     pattern: /\b(?:if|else|return|raise|assert|assume)\b/,
@@ -49,7 +50,7 @@ Prism.languages.rue = {
     pattern: /\bnil\b/,
     alias: "constant",
   },
-  builtin: /\b(?:Int|Any|Bytes32|Bytes|PublicKey|Nil|Bool)\b/,
+  builtin: /\b(?:Int|Any|Bytes32|Bytes|PublicKey|Bool)\b/,
   "class-name": /\b[A-Z][a-z][a-zA-Z0-9_]*\b/,
   constant: /\b[A-Z][A-Z0-9_]*\b/,
 };
