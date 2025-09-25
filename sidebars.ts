@@ -2,12 +2,10 @@ import type { SidebarsConfig } from "@docusaurus/plugin-content-docs";
 
 const sidebars: SidebarsConfig = {
   docs: [
-    {
-      type: "category",
-      label: "Getting Started",
-      items: ["getting-started/installation", "getting-started/hello-world"],
-      collapsed: false,
-    },
+    "installation",
+    "functions",
+    "bindings",
+    "constants",
     {
       type: "category",
       label: "Type System",
@@ -19,7 +17,6 @@ const sidebars: SidebarsConfig = {
         "type-system/unions",
         "type-system/guards",
       ],
-      collapsed: false,
     },
     "security",
   ],
