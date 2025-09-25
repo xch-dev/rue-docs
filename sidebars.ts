@@ -10,27 +10,18 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
-      label: "Definitions",
+      label: "Type System",
       items: [
-        "definitions/let-bindings",
-        "definitions/constants",
-        "definitions/functions",
+        "type-system/atoms",
+        "type-system/pairs",
+        "type-system/structs",
+        "type-system/aliases",
+        "type-system/unions",
+        "type-system/guards",
       ],
       collapsed: false,
     },
-    {
-      type: "category",
-      label: "Types",
-      items: [
-        "types/type-system",
-        "types/type-checking",
-        "types/pair-types",
-        "types/structs",
-        "types/enums",
-        "types/type-aliases",
-      ],
-      collapsed: false,
-    },
+    "security",
   ],
 };
 

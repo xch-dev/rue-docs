@@ -1,10 +1,11 @@
 Prism.languages.rue = {
   function: {
-    pattern: /(\bfun\s+)[a-zA-Z_][a-zA-Z0-9_]*/,
+    pattern: /\b(fn)\s+[a-zA-Z_][a-zA-Z0-9_]*/,
     lookbehind: true,
   },
   "function-call": {
-    pattern: /\b[a-zA-Z_][a-zA-Z0-9_]*(?=\s*(?:\(|<.*?>\())/,
+    pattern:
+      /\b[a-zA-Z_][a-zA-Z0-9_]*\s*(?:::\s*<.*?>\s*)?(?=\s*(?:\(|<.*?>\())/,
     alias: "function",
   },
   field: {
@@ -29,15 +30,15 @@ Prism.languages.rue = {
     /[+\-*?%!\^~]|<[<=]?|>[>=]?|=[=>]?|!=?|\.(?:\.\.)?|::|->?|&&?|\|\|?/,
   punctuation: /[(){}[\],:]/,
   "control-flow": {
-    pattern: /\b(?:if|else|return|raise|assert|assume)\b/,
+    pattern: /\b(?:if|else|return|raise|assert)\b/,
     alias: "keyword",
   },
   binding: {
-    pattern: /\b(?:let|const|fun)\b/,
+    pattern: /\b(?:let|const|fn)\b/,
     alias: "keyword",
   },
   type: {
-    pattern: /\b(?:type|struct|enum|as|is)\b/,
+    pattern: /\b(?:type|struct|as|is)\b/,
     alias: "keyword",
   },
   module: {
@@ -50,7 +51,7 @@ Prism.languages.rue = {
     pattern: /\bnil\b/,
     alias: "constant",
   },
-  builtin: /\b(?:Int|Any|Bytes32|Bytes|PublicKey|Bool)\b/,
+  builtin: /\b(?:Atom|Bytes|Bytes32|PublicKey|Int|Bool|Any|List)\b/,
   "class-name": /\b[A-Z][a-z][a-zA-Z0-9_]*\b/,
   constant: /\b[A-Z][A-Z0-9_]*\b/,
 };

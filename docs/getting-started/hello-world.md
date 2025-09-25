@@ -9,7 +9,7 @@ The simplest example of a program in Rue is the classic hello world example.
 Write the following program in a file named `hello.rue`:
 
 ```rue title="hello.rue"
-fun main() -> Bytes {
+fn main() -> Bytes {
     "Hello, world!"
 }
 ```
@@ -21,7 +21,7 @@ You don't need to use `return` at the end of a function. Everything in Rue must 
 Now, run the following command to run the file:
 
 ```bash
-rue build hello.rue --run
+rue build hello.rue
 ```
 
-You should see `"Hello, world!"` printed in the console.
+The output should be `(q . "Hello, world!)"`, which when run with CLVM outputs the string on its own.
