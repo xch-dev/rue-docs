@@ -72,7 +72,7 @@ const config: Config = {
           items: [
             {
               label: "Discord",
-              href: "https://discord.gg/Hbz3x3yTx2",
+              href: "https://discord.gg/sagewallet",
             },
           ],
         },
