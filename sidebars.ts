@@ -18,6 +18,9 @@ const sidebars: SidebarsConfig = {
         "type-system/guards",
       ],
     },
+    "operators",
+    "builtins",
+    "standard-library",
     "security",
   ],
 };
