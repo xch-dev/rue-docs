@@ -20,7 +20,6 @@ const sidebars: SidebarsConfig = {
     },
     "operators",
     "builtins",
-    "standard-library",
     "security",
   ],
 };

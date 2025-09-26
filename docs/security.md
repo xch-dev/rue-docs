@@ -41,4 +41,10 @@ fn main(
 }
 ```
 
+Or you can use the builtin `calculate_coin_id` function:
+
+```rue
+calculate_coin_id(parent_coin_id, puzzle_hash, amount)
+```
+
 Now, if someone tried to play tricks with the lengths, the assertions would fail and the program would raise an error.
