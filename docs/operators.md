@@ -16,6 +16,12 @@ slug: /operators
 | `/` | `4 / 2` | Divides two `Int` values and returns the quotient.     |
 | `%` | `3 % 2` | Divides two `Int` values and returns the remainder.    |
 
+:::note
+The `+` operator can be used with `Bytes` values to concatenate them together.
+
+The `+`, `-`, and `*` operators can be used with `PublicKey` or `Signature` values to perform the corresponding BLS math operations (ie point addition, subtraction, or multiplication).
+:::
+
 ### Unary
 
 | Op  | Example | Description                                        |
@@ -23,11 +29,9 @@ slug: /operators
 | `+` | `+42`   | An unnecessary no-op.                              |
 | `-` | `-42`   | Returns the negative equivalent of an `Int` value. |
 
-## Bytes
-
-| Op  | Example     | Description                                        |
-| --- | ----------- | -------------------------------------------------- |
-| `+` | `"A" + "B"` | Concatenates two values with the `Bytes` together. |
+:::note
+The `-` operator can be used with `PublicKey` or `Signature` values to negate them.
+:::
 
 ## Bitwise
 
@@ -62,3 +66,10 @@ slug: /operators
 :::note
 The comparison operators can also be used with `Bytes` values, and the special byte-specific `>s` operator is used to implement this in [CLVM](https://chialisp.com/operators/#comparison).
 :::
+
+## Equality
+
+| Op   | Example  | Description                                      |
+| ---- | -------- | ------------------------------------------------ |
+| `==` | `1 == 2` | If the left side is equal to the right side.     |
+| `!=` | `1 != 2` | If the left side is not equal to the right side. |

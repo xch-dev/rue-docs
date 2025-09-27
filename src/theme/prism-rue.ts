@@ -5,7 +5,7 @@ Prism.languages.rue = {
   },
   "function-call": {
     pattern:
-      /\b[a-zA-Z_][a-zA-Z0-9_]*\s*(?:::\s*<.*?>\s*)?(?=\s*(?:\(|<.*?>\())/,
+      /\b(?!(?:bls_pairing_identity|bls_verify|secp256k1_verify|secp256r1_verify)\b)[a-zA-Z_][a-zA-Z0-9_]*\s*(?:::\s*<.*?>\s*)?(?=\s*(?:\(|<.*?>\())/,
     alias: "function",
   },
   field: {
@@ -30,7 +30,8 @@ Prism.languages.rue = {
     /[+\-*?%!\^~]|<[<=]?|>[>=]?|=[=>]?|!=?|\.(?:\.\.)?|::|->?|&&?|\|\|?/,
   punctuation: /[(){}[\],:]/,
   "control-flow": {
-    pattern: /\b(?:if|else|return|raise|assert)\b/,
+    pattern:
+      /\b(?:if|else|return|raise|assert|bls_pairing_identity|bls_verify|secp256k1_verify|secp256r1_verify)\b/,
     alias: "keyword",
   },
   binding: {
