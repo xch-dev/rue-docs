@@ -52,7 +52,7 @@ Prism.languages.rue = {
     pattern: /\bnil\b/,
     alias: "constant",
   },
-  builtin: /\b(?:Atom|Bytes|Bytes32|PublicKey|Int|Bool|Any|List)\b/,
+  builtin: /\b(?:Atom|Bytes|Bytes32|PublicKey|Signature|Int|Bool|Any|List)\b/,
   "class-name": /\b[A-Z][a-z][a-zA-Z0-9_]*\b/,
   constant: /\b[A-Z][A-Z0-9_]*\b/,
 };
