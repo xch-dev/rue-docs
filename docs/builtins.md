@@ -14,16 +14,22 @@ You can click on each of these types to go to their corresponding page and learn
 2. [**Bytes**](/docs/type-system/atoms.md#bytes)
 3. [**Bytes32**](/docs/type-system/atoms.md#bytes32)
 4. [**PublicKey**](/docs/type-system/atoms.md#publickey)
-5. [**Int**](/docs/type-system/atoms.md#int)
-6. [**Bool**](/docs/type-system/atoms.md#bool)
-7. [**Any**](/docs/type-system/pairs.md#any)
-8. [**List**](/docs/type-system/pairs.md#lists)
+5. [**Signature**](/docs/type-system/atoms.md#signature)
+6. [**K1PublicKey**](/docs/type-system/atoms.md#k1publickey)
+7. [**K1Signature**](/docs/type-system/atoms.md#k1signature)
+8. [**R1PublicKey**](/docs/type-system/atoms.md#r1publickey)
+9. [**R1Signature**](/docs/type-system/atoms.md#r1signature)
+10. [**Int**](/docs/type-system/atoms.md#int)
+11. [**Bool**](/docs/type-system/atoms.md#bool)
+12. [**Any**](/docs/type-system/pairs.md#any)
+13. [**List**](/docs/type-system/pairs.md#lists)
+14. [**AlternatingList**](/docs/type-system/pairs.md#alternating-lists)
 
 ## Functions
 
 ### `sha256`
 
-Calculates the [SHA-256](https://en.wikipedia.org/wiki/SHA-2) hash of the bytes provided. This hash is calculated at runtime.
+Calculates the [SHA-256](https://en.wikipedia.org/wiki/SHA-2) hash of the bytes provided. While this hashes the value at runtime, there is also a `sha256_inline` builtin that allows you to hash a constant value at compile time and insert the result into the program. Its use is discouraged (because hard coding 32 bytes is costly in CLVM) unless you have a very large constant value that you want to avoid hashing multiple times.
 
 For example:
 
@@ -31,19 +37,17 @@ For example:
 let hash = sha256("hello");
 ```
 
-### `sha256_inline`
-
-The same as `sha256`, except the value will be calculated at compile time and inserted into the program. In some rare scenario, this may be an important optimization to avoid hashing the same large constant value many times. However, in most cases, you should just use the regular `sha256` function.
-
-For example:
+There's also a variant with the spread syntax that allows you to hash a list of arguments that is computed at runtime (rather than a static list):
 
 ```rue
-let hash = sha256_inline("hello");
+let hash = sha256(...list);
 ```
+
+Note that this prevents the compiler from being able to fold the arguments into a constant at compile time. However, it saves CLVM cost by not having to recursively concatenate the arguments.
 
 ### `keccak256`
 
-Calculates the [Keccak-256](https://en.wikipedia.org/wiki/SHA-3) hash of the bytes provided. This hash is calculated at runtime.
+Calculates the [Keccak-256](https://en.wikipedia.org/wiki/SHA-3) hash of the bytes provided. While this hashes the value at runtime, there is also a `keccak256_inline` builtin that allows you to hash a constant value at compile time and insert the result into the program. Its use is discouraged (because hard coding 32 bytes is costly in CLVM) unless you have a very large constant value that you want to avoid hashing multiple times.
 
 For example:
 
@@ -51,15 +55,13 @@ For example:
 let hash = keccak256("hello");
 ```
 
-### `keccak256_inline`
-
-The same as `keccak256`, except the value will be calculated at compile time and inserted into the program. In some rare scenario, this may be an important optimization to avoid hashing the same large constant value many times. However, in most cases, you should just use the regular `keccak256` function.
-
-For example:
+There's also a variant with the spread syntax that allows you to hash a list of arguments that is computed at runtime (rather than a static list):
 
 ```rue
-let hash = keccak256_inline("hello");
+let hash = keccak256(...list);
 ```
+
+Note that this prevents the compiler from being able to fold the arguments into a constant at compile time. However, it saves CLVM cost by not having to recursively concatenate the arguments.
 
 ### `coinid`
 
@@ -83,17 +85,11 @@ substr("hello", 1, 4)
 
 This would return `"ell"`
 
-### `substr_start`
-
-Returns a substring of a byte value, given a starting index. Note that if the index is out of bounds, this will raise an error.
-
-For example:
+The end index is optional, and defaults to the length of the string:
 
 ```rue
-substr_start("hello", 1)
+substr("hello", 1)
 ```
-
-This would return `"ello"`
 
 ### `g1_map`
 
@@ -105,14 +101,10 @@ For example:
 g1_map("hello")
 ```
 
-### `g1_map_dist`
-
-Hashes the data to a BLS public key, with sha256 and ExpandMsgXmd. This function allows you to add a DST.
-
-For example:
+You can also specify an optional DST parameter:
 
 ```rue
-g1_map_dst("hello", "dst")
+g1_map("hello", "dst")
 ```
 
 ### `g2_map`
@@ -125,14 +117,10 @@ For example:
 g2_map("hello")
 ```
 
-### `g2_map_dst`
-
-Hashes the data to a BLS signature, with sha256 and ExpandMsgXmd. This function allows you to add a DST.
-
-For example:
+You can also specify an optional DST parameter:
 
 ```rue
-g2_map_dst("hello", "dst")
+g2_map("hello", "dst")
 ```
 
 ### `pubkey_for_exp`
@@ -155,6 +143,31 @@ For example:
 modpow(5, 50, 45)
 ```
 
+### `divmod`
+
+Computes both `numerator / denominator` and `numerator % denominator` and returns a pair of the results.
+
+For example:
+
+```rue
+let (quotient, remainder) = divmod(50, 3);
+```
+
+## Operator Optimizations
+
+Similarly to [sha256](#sha256) and [keccak256](#keccak256), the following builtin functions are provided to optimize the use of operators on lists of arguments:
+
+1. `concat` (the `+` operator on bytes)
+2. `sum` (the `+` operator on integers)
+3. `difference` (the `-` operator on integers)
+4. `product` (the `*` operator on integers)
+5. `any` (the `|` operator on booleans)
+6. `all` (the `&` operator on booleans)
+7. `g1_sum` (the `+` operator on BLS public keys)
+8. `g1_difference` (the `-` operator on BLS public keys)
+9. `g2_sum` (the `+` operator on BLS signatures)
+10. `g2_difference` (the `-` operator on BLS signatures)
+
 ## Verifications
 
 The following CLVM operators return `nil` on success, and raise if they fail:
@@ -164,15 +177,11 @@ The following CLVM operators return `nil` on success, and raise if they fail:
 3. `secp256k1_verify`
 4. `secp256r1_verify`
 
-As such, they would be difficult to use if they were implemented as builtin functions. Instead, Rue provides verification **statements**, which can be called similarly to functions but can't directly be used as an expression. You can think of these like specialized `assert` statements, since they will raise if the verification fails, and continue on if not.
+You can think of these like specialized `assert` statements, since they will raise if the verification fails, and continue on if not. Rue provides these as builtin functions that can be called as a statement.
 
 These are automatically optimized such that ordinary references to `nil` after the verification statements in the block are replaced with the verification expression (since it returns `nil` anyways). If there aren't any possible substitutions, the rest of the block will be wrapped in a cons pair, with the verifications happening first, and then unwrapped back into the expression value of the block. And finally, if multiple verifications need to be done in a group, the `all` operator will be used, since it will always return `nil` as well.
 
 All of this is to say that the compiler will pick the most efficient way to insert these verifications into your program without disrupting its behavior at runtime.
-
-:::note
-It's not currently possible to dynamically construct the arguments to these verifications from a list at runtime. This is a limitation that seems to exist in Chialisp as well. This may be possible in the future.
-:::
 
 ### `bls_pairing_identity`
 
@@ -193,6 +202,8 @@ bls_pairing_identity(
 );
 ```
 
+You can use the spread syntax to verify a list of pairs.
+
 ### `bls_verify`
 
 Accepts a signature followed by a flattened sequence of public key and message pairs, and verifies that the aggregate signature is valid. Otherwise, this will raise.
@@ -206,6 +217,8 @@ bls_verify(
     0x39cb1950dba19a7bee9924b5bd2b29f190ffe4ef,
 );
 ```
+
+You can use the spread syntax to verify a list of pairs.
 
 ### `secp256k1_verify`
 

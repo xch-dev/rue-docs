@@ -40,5 +40,5 @@ fn main(num: Int) -> Int {
 This should be used sparingly, since it can come with either a performance hit, an increase in compiled output size, or both.
 
 :::tip
-The compiler will automatically inline `let` bindings if they are only referenced a single time. You almost never need to explicitly mark them as `inline`.
+The compiler will automatically inline `let` bindings if they are only referenced a single time.
 :::
