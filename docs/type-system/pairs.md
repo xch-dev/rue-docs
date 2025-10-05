@@ -47,6 +47,16 @@ type List<T> = nil | (T, List<T>);
 
 This type is general enough to allow a list of arbitrary or unknown length. However, you can also explicitly write a sequence of nested pairs as a type if you want to.
 
+## Alternating Lists
+
+An alternating list is a list that alternates between two types. It is defined as such:
+
+```rue
+type AlternatingList<T, U> = nil | (T, (U, AlternatingList<T, U>));
+```
+
+This is useful for representing alternating sequences of two types, such as the arguments to BLS opcodes.
+
 ## Any
 
 Any is defined recursively with a type alias as well:
