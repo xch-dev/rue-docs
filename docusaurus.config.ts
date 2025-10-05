@@ -8,7 +8,7 @@ const config: Config = {
   favicon: "img/favicon.ico",
   url: "https://rue-lang.com",
   baseUrl: "/",
-  organizationName: "Rigidity",
+  organizationName: "xch-dev",
   projectName: "Rue",
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
@@ -22,7 +22,7 @@ const config: Config = {
       {
         docs: {
           sidebarPath: "./sidebars.ts",
-          editUrl: "https://github.com/rigidity/rue",
+          editUrl: "https://github.com/xch-dev/rue",
         },
         blog: false,
         theme: {
@@ -49,7 +49,7 @@ const config: Config = {
           label: "Docs",
         },
         {
-          href: "https://github.com/rigidity/rue",
+          href: "https://github.com/xch-dev/rue",
           label: "GitHub",
           position: "right",
         },
@@ -81,7 +81,7 @@ const config: Config = {
           items: [
             {
               label: "GitHub",
-              href: "https://github.com/rigidity/rue",
+              href: "https://github.com/xch-dev/rue",
             },
           ],
         },
