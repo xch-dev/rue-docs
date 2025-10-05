@@ -4,8 +4,7 @@ Prism.languages.rue = {
     lookbehind: true,
   },
   "function-call": {
-    pattern:
-      /\b(?!(?:bls_pairing_identity|bls_verify|secp256k1_verify|secp256r1_verify)\b)[a-zA-Z_][a-zA-Z0-9_]*\s*(?:::\s*<.*?>\s*)?(?=\s*(?:\(|<.*?>\())/,
+    pattern: /\b[a-zA-Z_][a-zA-Z0-9_]*\s*(?:::|\()/,
     alias: "function",
   },
   field: {
@@ -30,8 +29,7 @@ Prism.languages.rue = {
     /[+\-*?%!\^~]|<[<=]?|>[>=]?|=[=>]?|!=?|\.(?:\.\.)?|::|->?|&&?|\|\|?/,
   punctuation: /[(){}[\],:]/,
   "control-flow": {
-    pattern:
-      /\b(?:if|else|return|raise|assert|bls_pairing_identity|bls_verify|secp256k1_verify|secp256r1_verify)\b/,
+    pattern: /\b(?:if|else|return|raise|assert)\b/,
     alias: "keyword",
   },
   binding: {
@@ -46,13 +44,14 @@ Prism.languages.rue = {
     pattern: /\b(?:import|mod)\b/,
     alias: "keyword",
   },
-  modifier: { pattern: /\b(?:inline|export)\b/, alias: "keyword" },
+  modifier: { pattern: /\b(?:inline|export|extern|test)\b/, alias: "keyword" },
   boolean: /\b(?:false|true)\b/,
   null: {
     pattern: /\bnil\b/,
     alias: "constant",
   },
-  builtin: /\b(?:Atom|Bytes|Bytes32|PublicKey|Signature|Int|Bool|Any|List)\b/,
+  builtin:
+    /\b(?:Atom|Bytes|Bytes32|PublicKey|Signature|K1PublicKey|K1Signature|R1PublicKey|R1Signature|Int|Bool|Any|List|AlternatingList)\b/,
   "class-name": /\b[A-Z][a-z][a-zA-Z0-9_]*\b/,
   constant: /\b[A-Z][A-Z0-9_]*\b/,
 };

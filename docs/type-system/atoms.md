@@ -12,8 +12,13 @@ There are multiple types of atoms:
 2. **Bytes** - explicitly treated as bytes
 3. **Bytes32** - a `Bytes` value with a length of 32
 4. **PublicKey** - a [BLS12-381](https://en.wikipedia.org/wiki/BLS_digital_signature) public key with a length of 48 bytes
-5. **Int** - a signed integer of arbitrary size
-6. **Bool** - either `true` or `false`
+5. **Signature** - a [BLS12-381](https://en.wikipedia.org/wiki/BLS_digital_signature) signature with a length of 96 bytes
+6. **K1PublicKey** - a secp256k1 public key with a length of 33 bytes
+7. **K1Signature** - a secp256k1 signature with a length of 64 bytes
+8. **R1PublicKey** - a secp256r1 public key with a length of 33 bytes
+9. **R1Signature** - a secp256r1 signature with a length of 64 bytes
+10. **Int** - a signed integer of arbitrary size
+11. **Bool** - either `true` or `false`
 
 ## Atom
 
@@ -56,6 +61,36 @@ This will emit code at runtime to check that the value has a length of 32.
 The `PublicKey` type represents a [BLS12-381](https://en.wikipedia.org/wiki/BLS_digital_signature) public key (also commonly referred to as a G1 element).
 
 An atom must be 48 bytes long to be compatible with `PublicKey`, although there is typically no harm done by not verifying the length at runtime before using it in conditions or BLS opcodes, as long as it's not directly concatenated with other bytes.
+
+## Signature
+
+The `Signature` type represents a [BLS12-381](https://en.wikipedia.org/wiki/BLS_digital_signature) signature (also commonly referred to as a G2 element).
+
+An atom must be 96 bytes long to be compatible with `Signature`, although there is typically no harm done by not verifying the length at runtime before using it in conditions or BLS opcodes, as long as it's not directly concatenated with other bytes.
+
+## K1PublicKey
+
+The `K1PublicKey` type represents a secp256k1 public key.
+
+An atom must be 33 bytes long to be compatible with `K1PublicKey`, although there is typically no harm done by not verifying the length at runtime before using it in conditions or SECP opcodes, as long as it's not directly concatenated with other bytes.
+
+## K1Signature
+
+The `K1Signature` type represents a secp256k1 signature.
+
+An atom must be 64 bytes long to be compatible with `K1Signature`, although there is typically no harm done by not verifying the length at runtime before using it in conditions or SECP opcodes, as long as it's not directly concatenated with other bytes.
+
+## R1PublicKey
+
+The `R1PublicKey` type represents a secp256r1 public key.
+
+An atom must be 33 bytes long to be compatible with `R1PublicKey`, although there is typically no harm done by not verifying the length at runtime before using it in conditions or SECP opcodes, as long as it's not directly concatenated with other bytes.
+
+## R1Signature
+
+The `R1Signature` type represents a secp256r1 signature.
+
+An atom must be 64 bytes long to be compatible with `R1Signature`, although there is typically no harm done by not verifying the length at runtime before using it in conditions or SECP opcodes, as long as it's not directly concatenated with other bytes.
 
 ## Int
 
