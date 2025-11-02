@@ -29,7 +29,7 @@ Prism.languages.rue = {
     /[+\-*?%!\^~]|<[<=]?|>[>=]?|=[=>]?|!=?|\.(?:\.\.)?|::|->?|&&?|\|\|?/,
   punctuation: /[(){}[\],:]/,
   "control-flow": {
-    pattern: /\b(?:if|else|return|raise|assert)\b/,
+    pattern: /\b(?:if|else|return|raise|assert|debug)\b/,
     alias: "keyword",
   },
   binding: {

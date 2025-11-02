@@ -4,6 +4,7 @@ const sidebars: SidebarsConfig = {
   docs: [
     "installation",
     "functions",
+    "control-flow",
     "bindings",
     "constants",
     {
@@ -20,6 +21,7 @@ const sidebars: SidebarsConfig = {
     },
     "operators",
     "builtins",
+    "debugging",
     "security",
   ],
 };
