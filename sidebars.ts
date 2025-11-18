@@ -8,6 +8,7 @@ const sidebars: SidebarsConfig = {
       label: "Tutorials",
       items: ["tutorials/password", "tutorials/signature"],
     },
+    "modules",
     "functions",
     "control-flow",
     "bindings",
