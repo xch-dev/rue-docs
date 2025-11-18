@@ -240,7 +240,7 @@ Next, we need to add `sha2` as a dependency in our Rust project:
 cargo add sha2
 ```
 
-We should change the curried argument struct to match:
+We should update the Rust code to match. First, change the curried argument struct:
 
 ```rust
 #[derive(Debug, Clone, ToClvm, FromClvm)]
@@ -343,3 +343,7 @@ Additionally, the password would only be good for one use, since any other coins
 And lastly, a single sha256 hashed password is very easy to brute force and guess.
 
 For these reasons, passwords are not a good way to secure your funds on the blockchain. But it's a good introduction into how coins work and the kinds of attacks you have to prepare for.
+
+## Next Steps
+
+In the [next tutorial](/docs/tutorials/signature.md), we'll create a puzzle that requires a signature from a specific public key to be spent. This fixes all of the security issues with the password puzzle and introduces the concept of BLS signatures and public keys.

@@ -6,7 +6,7 @@ const sidebars: SidebarsConfig = {
     {
       type: "category",
       label: "Tutorials",
-      items: ["tutorials/password"],
+      items: ["tutorials/password", "tutorials/signature"],
     },
     "functions",
     "control-flow",
