@@ -11,14 +11,15 @@ There are multiple types of atoms:
 1. **Atom** - has no semantic meaning
 2. **Bytes** - explicitly treated as bytes
 3. **Bytes32** - a `Bytes` value with a length of 32
-4. **PublicKey** - a [BLS12-381](https://en.wikipedia.org/wiki/BLS_digital_signature) public key with a length of 48 bytes
-5. **Signature** - a [BLS12-381](https://en.wikipedia.org/wiki/BLS_digital_signature) signature with a length of 96 bytes
-6. **K1PublicKey** - a secp256k1 public key with a length of 33 bytes
-7. **K1Signature** - a secp256k1 signature with a length of 64 bytes
-8. **R1PublicKey** - a secp256r1 public key with a length of 33 bytes
-9. **R1Signature** - a secp256r1 signature with a length of 64 bytes
-10. **Int** - a signed integer of arbitrary size
-11. **Bool** - either `true` or `false`
+4. **String** - a UTF-8 encoded string
+5. **PublicKey** - a [BLS12-381](https://en.wikipedia.org/wiki/BLS_digital_signature) public key with a length of 48 bytes
+6. **Signature** - a [BLS12-381](https://en.wikipedia.org/wiki/BLS_digital_signature) signature with a length of 96 bytes
+7. **K1PublicKey** - a secp256k1 public key with a length of 33 bytes
+8. **K1Signature** - a secp256k1 signature with a length of 64 bytes
+9. **R1PublicKey** - a secp256r1 public key with a length of 33 bytes
+10. **R1Signature** - a secp256r1 signature with a length of 64 bytes
+11. **Int** - a signed integer of arbitrary size
+12. **Bool** - either `true` or `false`
 
 ## Atom
 
@@ -55,6 +56,10 @@ This will emit code at runtime to check that the value has a length of 32.
 :::danger
 `Bytes32` can only guarantee the length of trusted values. See the [Security](/docs/security.md#untrusted-values) page for more details.
 :::
+
+## String
+
+The `String` type represents a UTF-8 encoded string. It's functionally equivalent to `Bytes`, but provides a more descriptive name for working with text values, and hints to the compiler that the value is a string rather than a sequence of bytes (which is useful for error messages).
 
 ## PublicKey
 

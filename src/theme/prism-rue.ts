@@ -41,7 +41,7 @@ Prism.languages.rue = {
     alias: "keyword",
   },
   module: {
-    pattern: /\b(?:import|mod)\b/,
+    pattern: /\b(?:import|mod|super)\b/,
     alias: "keyword",
   },
   modifier: { pattern: /\b(?:inline|export|extern|test)\b/, alias: "keyword" },
@@ -51,7 +51,7 @@ Prism.languages.rue = {
     alias: "constant",
   },
   builtin:
-    /\b(?:Atom|Bytes|Bytes32|PublicKey|Signature|K1PublicKey|K1Signature|R1PublicKey|R1Signature|Int|Bool|Any|List|AlternatingList)\b/,
+    /\b(?:Atom|Bytes|String|Bytes32|PublicKey|Signature|K1PublicKey|K1Signature|R1PublicKey|R1Signature|Int|Bool|Any|List|AlternatingList)\b/,
   "class-name": /\b[A-Z][a-z][a-zA-Z0-9_]*\b/,
   constant: /\b[A-Z][A-Z0-9_]*\b/,
 };
