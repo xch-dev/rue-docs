@@ -77,10 +77,10 @@ While the type can technically be inferred, it's often necessary to explicitly u
 Default values are always inlined exactly as written. If the value is expensive to compute, or would require a lot of bytes to duplicate in the output program, it should be extracted out into a constant:
 
 ```rue
-const DEFAULT_NAME: Bytes = "Patricia";
+const DEFAULT_NAME: String = "Patricia";
 
 struct Person {
-    name: Bytes = DEFAULT_NAME,
+    name: String = DEFAULT_NAME,
 }
 ```
 

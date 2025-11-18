@@ -71,7 +71,7 @@ The simplest example of a program in Rue is the classic hello world example.
 Write the following program in a file named `hello.rue`:
 
 ```rue title="hello.rue"
-fn main() -> Bytes {
+fn main() -> String {
     "Hello, world!"
 }
 ```

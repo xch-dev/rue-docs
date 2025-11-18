@@ -11,9 +11,9 @@ They are similar to [Bindings](/docs/bindings.md), which the primary difference 
 As a simple example, you might want to reuse a string multiple times:
 
 ```rue
-const GREET: Bytes = "Hello, ";
+const GREET: String = "Hello, ";
 
-fn main(person_a: Bytes, person_b: Bytes) -> (Bytes, Bytes) {
+fn main(person_a: String, person_b: String) -> (String, String) {
     (GREET + person_a, GREET + person_b)
 }
 ```
@@ -25,9 +25,9 @@ You can mark a constant as `inline`, which forces its value to be inserted every
 As an example, this will behave the same as if you had written the string multiple times:
 
 ```rue
-inline const GREET: Bytes = "Hello, ";
+inline const GREET: String = "Hello, ";
 
-fn main(person_a: Bytes, person_b: Bytes) -> (Bytes, Bytes) {
+fn main(person_a: String, person_b: String) -> (String, String) {
     (GREET + person_a, GREET + person_b)
 }
 ```
