@@ -7,8 +7,8 @@ import TabItem from '@theme/TabItem';
 
 # Installation
 
-:::warning
-Rue is currently in alpha. Please use it with caution and report any bugs you find in doing so.
+:::note
+Rue is still in active development. If you run into any issues, please report them in [GitHub issues](https://github.com/xch-dev/rue/issues).
 :::
 
 First, you will need to install the [Rust toolchain](https://rustup.rs).
@@ -66,20 +66,26 @@ Any editor that supports Open VSX and VSCode extensions will likely support this
 
 ## Hello World
 
-The simplest example of a program in Rue is the classic hello world example.
+The simplest program in Rue is the classic "hello world" example.
 
-Write the following program in a file named `hello.rue`:
+You can run the following command to setup a new project:
 
-```rue title="hello.rue"
+```bash
+rue init
+```
+
+And then you can build it:
+
+```bash
+rue build
+```
+
+The `puzzles/main.rue` file should contain something like this:
+
+```rue
 fn main() -> String {
     "Hello, world!"
 }
 ```
 
-Now, run the following command to run the file:
-
-```bash
-rue build hello.rue
-```
-
-The output should be `(q . "Hello, world!)"`, which when run with CLVM outputs the string on its own.
+And the CLVM output when compiling it is `(q . "Hello, world!)"`.

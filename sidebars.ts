@@ -3,6 +3,11 @@ import type { SidebarsConfig } from "@docusaurus/plugin-content-docs";
 const sidebars: SidebarsConfig = {
   docs: [
     "installation",
+    {
+      type: "category",
+      label: "Tutorials",
+      items: ["tutorials/password"],
+    },
     "functions",
     "control-flow",
     "bindings",
