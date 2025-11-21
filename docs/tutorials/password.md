@@ -55,7 +55,7 @@ And install a couple dependencies:
 cargo add chia-wallet-sdk anyhow
 ```
 
-Clear the contents of `lib.rs` and define the curried argument type and solution type for the puzzle as structs:
+Clear the contents of `lib.rs` in the `src` directory, and define the curried argument type and solution type for the puzzle as structs:
 
 ```rust
 use chia_wallet_sdk::prelude::*;
