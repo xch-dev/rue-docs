@@ -22,7 +22,7 @@ const config: Config = {
       {
         docs: {
           sidebarPath: "./sidebars.ts",
-          editUrl: "https://github.com/xch-dev/rue",
+          editUrl: "https://github.com/xch-dev/rue-docs/edit/main/",
         },
         blog: false,
         theme: {
