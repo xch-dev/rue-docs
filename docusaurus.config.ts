@@ -8,10 +8,12 @@ const config: Config = {
   favicon: "img/favicon.ico",
   url: "https://rue-lang.com",
   baseUrl: "/",
-  organizationName: "xch-dev",
-  projectName: "Rue",
   onBrokenLinks: "throw",
-  onBrokenMarkdownLinks: "warn",
+  markdown: {
+    hooks: {
+      onBrokenMarkdownLinks: "throw",
+    },
+  },
   i18n: {
     defaultLocale: "en",
     locales: ["en"],
@@ -33,8 +35,7 @@ const config: Config = {
   ],
 
   themeConfig: {
-    // Replace with your project's social card
-    image: "img/docusaurus-social-card.jpg",
+    image: "img/rue.png",
     navbar: {
       title: "Rue Lang",
       logo: {

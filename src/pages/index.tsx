@@ -4,6 +4,7 @@ import HomepageFeatures from "@site/src/components/HomepageFeatures";
 import Heading from "@theme/Heading";
 import Layout from "@theme/Layout";
 import clsx from "clsx";
+import type { ReactNode } from "react";
 
 import styles from "./index.module.css";
 
@@ -29,7 +30,7 @@ function HomepageHeader() {
   );
 }
 
-export default function Home(): JSX.Element {
+export default function Home(): ReactNode {
   return (
     <Layout description="Documentation for the Rue programming language.">
       <HomepageHeader />
