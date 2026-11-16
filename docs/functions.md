@@ -16,7 +16,7 @@ fn add(a: Int, b: Int) -> Int {
 
 And they can be called by other functions:
 
-```rue
+```rue ignore
 fn main() -> Int {
     add(42, 34)
 }
@@ -64,7 +64,7 @@ Will compile to the CLVM `(q . 42)`.
 
 Another kind of entrypoint is a test function, which lets you write unit tests directly alongside your Rue code:
 
-```rue
+```rue ignore
 test fn verify() {
     assert main() == 42;
 }
@@ -144,7 +144,7 @@ extern fn sum_all(...numbers: List<Int>) -> Int {
 
 Rue doesn't allow you to pass an arbitrary number of arguments directly. Instead, when a function has a spread parameter, the last argument you pass to it must also be spread:
 
-```rue
+```rue ignore
 fn main() -> Int {
     let list = [1, 2, 3, 4, 5];
     sum_all(...list)
@@ -181,7 +181,7 @@ fn main(...solution: Solution) -> List<Condition> {
 
 An `extern` function can also be loaded from a program that's already been compiled, instead of being written in Rue. The program is read from a hex file (such as one produced by `rue build --hex`, or the `.hex` files in the [chia_puzzles](https://github.com/Chia-Network/chia_puzzles) repository), with a path relative to the source file:
 
-```rue
+```rue ignore
 extern fn add(a: Int, b: Int) -> Int from "./add.hex";
 
 fn main() -> Int {

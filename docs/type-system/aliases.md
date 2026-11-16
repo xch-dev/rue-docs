@@ -54,7 +54,7 @@ The type system is equipped to handle recursive types like this, and they are qu
 
 However, a type must pass through a pair before it refers to itself. A type that refers to itself directly (or through a union, or another alias) without any nesting is an error, since it doesn't describe any actual value:
 
-```rue
+```rue error
 // Error: Type `Value` refers to itself without passing through a pair
 type Value = Value | Int;
 ```

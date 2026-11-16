@@ -47,7 +47,7 @@ Exporting a function from `main.rue` also makes it an [entrypoint](/docs/functio
 
 You can reference exported symbols and types from other modules by using the module name followed by the path to the symbol or type:
 
-```rue
+```rue ignore
 fn main() -> String {
     utils::greet("Alice")
 }
@@ -59,7 +59,7 @@ In this case, we are referencing the `greet` function from the `utils` module.
 
 Instead of referencing by path every time, you can import symbols and types from other modules into the current scope so that they can be referenced directly:
 
-```rue
+```rue ignore
 import utils::greet;
 
 fn main() -> String {
@@ -69,7 +69,7 @@ fn main() -> String {
 
 You can import multiple items at once:
 
-```rue
+```rue ignore
 import utils::{exclaim, greet};
 
 fn main() -> String {
@@ -79,7 +79,7 @@ fn main() -> String {
 
 You can also import all of the exported items from a module by using the `*` wildcard:
 
-```rue
+```rue ignore
 import utils::*;
 
 fn main() -> String {
@@ -95,7 +95,7 @@ A name can refer to both a symbol (such as a function or constant) and a type (s
 
 It's possible to re-export items, which makes them available to other modules as if they were declared in the current module:
 
-```rue
+```rue ignore
 export conditions::*;
 export utils::greet;
 ```

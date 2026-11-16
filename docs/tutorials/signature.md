@@ -32,14 +32,8 @@ Open it in your editor of choice. You should see a `puzzles` directory with a `m
 You can replace the contents of `main.rue` with the following:
 
 ```rue
-fn main(
-    public_key: PublicKey,
-    conditions: List<Condition>,
-) -> List<Condition> {
-    let agg_sig = AggSigMe {
-        public_key,
-        message: tree_hash(conditions),
-    };
+fn main(public_key: PublicKey, conditions: List<Condition>) -> List<Condition> {
+    let agg_sig = AggSigMe { public_key, message: tree_hash(conditions) };
 
     [agg_sig, ...conditions]
 }
@@ -232,10 +226,7 @@ fn main(
     delegated_puzzle: fn(...solution: Any) -> List<Condition>,
     delegated_solution: Any,
 ) -> List<Condition> {
-    let agg_sig = AggSigMe {
-        public_key,
-        message: tree_hash(delegated_puzzle),
-    };
+    let agg_sig = AggSigMe { public_key, message: tree_hash(delegated_puzzle) };
 
     let conditions = delegated_puzzle(...delegated_solution);
 

@@ -38,3 +38,15 @@ pnpm prettier
 pnpm typecheck
 pnpm build
 ```
+
+The Rue examples in the docs are checked separately, since this needs the Rue CLI at the version in `.rue-version` (`cargo install rue-cli --version <version>`):
+
+```bash
+pnpm check:rue-examples
+```
+
+Every ` ```rue ` block must compile without errors or warnings, pass its tests, and be formatted the way `rue fmt` formats it. See `scripts/check-rue-examples.py` for the info strings (such as ` ```rue ignore `) that change what's checked for a block.
+
+## Updating for a Rue release
+
+The docs describe the Rue version in `.rue-version`. The `update-rue-docs` skill in `.claude/skills` updates them for a new release: run `/update-rue-docs [version]` in Claude Code.

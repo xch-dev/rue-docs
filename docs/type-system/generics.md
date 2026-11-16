@@ -18,7 +18,7 @@ fn identity<T>(value: T) -> T {
 
 When you call a generic function, the compiler infers the type parameters from the arguments you pass:
 
-```rue
+```rue ignore
 fn main() -> Int {
     identity(42)
 }
