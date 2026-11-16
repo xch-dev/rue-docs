@@ -58,7 +58,7 @@ Among the flags, a lint's own flag takes precedence over its group's, unless the
 
 Levels can also be set in the source code, with an `allow`, `warn`, `deny` or `forbid` attribute on an item (such as a function, constant, struct, type alias, import or module) or a statement. The attribute applies to everything inside of what it's attached to, and the innermost one takes precedence over any outer attributes and the project's levels, whether it names a lint or a group. An attribute can list multiple lints, separated by commas:
 
-```rue
+```rue warn
 #[deny(unused_binding)]
 mod strict {
     #[allow(unused_function, unused_parameter)]
@@ -74,7 +74,7 @@ If an item or statement has more than one attribute for the same lint, the last 
 
 A `forbid` attribute works like `deny`, but nothing inside of it can change the lint's level. The same goes for lints forbidden in `Rue.toml` or on the command line. An attribute or flag that tries to change the level of a forbidden lint has no effect on it, and is reported as an error:
 
-```rue
+```rue error
 #[forbid(unused_binding)]
 fn strict() -> Int {
     #[allow(unused_binding)] // Error: Cannot set lint `unused_binding` to `allow`
@@ -101,7 +101,7 @@ An `expect` for a group is fulfilled by any lint in it, and like `allow`, it can
 
 To set a level for a whole file, use an inner attribute (with a `!`) at the start of the file, before any items. Inner attributes can also go at the start of a `mod { ... }` body to apply to the whole module, where they come after the attributes on the `mod` itself, so they take precedence unless those forbid the lint. Attributes on the items inside still override them:
 
-```rue
+```rue warn
 #![allow(unused_function)]
 
 fn reserved() -> Int {

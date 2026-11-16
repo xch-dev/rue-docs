@@ -49,6 +49,33 @@ jobs:
         with:
           path: ./build
 
+  rue-examples:
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Read the Rue version
+        id: rue
+        run: echo "version=$(cat .rue-version)" >> "$GITHUB_OUTPUT"
+
+      # Building rue-cli from source takes a few minutes, so the binary is cached per version
+      - name: Cache the Rue CLI
+        id: cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.cargo/bin/rue
+          key: rue-cli-${{ runner.os }}-${{ steps.rue.outputs.version }}
+
+      - name: Install the Rue CLI
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: cargo install rue-cli --version "${{ steps.rue.outputs.version }}" --locked
+
+      - name: Check Rue examples
+        run: python3 scripts/check-rue-examples.py
+
   deploy:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     needs: build

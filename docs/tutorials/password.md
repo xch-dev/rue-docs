@@ -25,7 +25,9 @@ Open it in your editor of choice. You should see a `puzzles` directory with a `m
 
 You can replace the contents of `main.rue` with the following:
 
-```rue
+{/* nofmt: rue fmt breaks this signature inside `List<Condition>` instead of between the parameters (https://github.com/xch-dev/rue/issues/322). */}
+
+```rue nofmt
 fn main(
     correct_password: String,
     password: String,
@@ -223,11 +225,7 @@ To solve this, we could curry the hash of the password instead of the password i
 Here's the new Rue puzzle:
 
 ```rue
-fn main(
-    password_hash: Bytes32,
-    password: String,
-    conditions: List<Condition>,
-) -> List<Condition> {
+fn main(password_hash: Bytes32, password: String, conditions: List<Condition>) -> List<Condition> {
     assert sha256(password) == password_hash;
 
     conditions

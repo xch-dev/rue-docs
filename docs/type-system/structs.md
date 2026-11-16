@@ -17,7 +17,7 @@ struct Point {
 
 You can initialize a value with this type like so:
 
-```rue
+```rue ignore
 fn main() -> Point {
     Point { x: 42, y: 34 }
 }
@@ -25,7 +25,7 @@ fn main() -> Point {
 
 If you have a binding with the same name as a field, you can use the shorthand syntax:
 
-```rue
+```rue ignore
 fn point(x: Int, y: Int) -> Point {
     Point { x, y }
 }
@@ -33,7 +33,7 @@ fn point(x: Int, y: Int) -> Point {
 
 And access fields on the value:
 
-```rue
+```rue ignore
 fn area(point: Point) -> Int {
     point.x * point.y
 }

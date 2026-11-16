@@ -12,7 +12,8 @@
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids",
     "typecheck": "tsc",
-    "prettier": "prettier --check ."
+    "prettier": "prettier --check .",
+    "check:rue-examples": "python3 scripts/check-rue-examples.py"
   },
   "dependencies": {
     "@docusaurus/core": "3.10.2",

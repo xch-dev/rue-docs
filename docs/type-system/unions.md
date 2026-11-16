@@ -14,7 +14,7 @@ type Owner = Bytes32 | nil;
 
 You can assign either of these types to `Owner`:
 
-```rue
+```rue ignore
 fn main() -> Owner {
     nil
 }
