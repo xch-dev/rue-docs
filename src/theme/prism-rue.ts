@@ -1,4 +1,18 @@
 Prism.languages.rue = {
+  string: {
+    pattern: /"[^"]*"/,
+    greedy: true,
+  },
+  comment: {
+    pattern: /\/\/.*|\/\*[^]*?\*\//,
+    multiline: true,
+    greedy: true,
+  },
+  attribute: {
+    pattern: /#!?\[[^\]]*\]/,
+    greedy: true,
+    alias: "attr-name",
+  },
   function: {
     pattern: /\b(fn)\s+[a-zA-Z_][a-zA-Z0-9_]*/,
     lookbehind: true,
@@ -16,15 +30,7 @@ Prism.languages.rue = {
     lookbehind: true,
     alias: "property",
   },
-  string: {
-    pattern: /"[^"]*"/,
-  },
-  comment: {
-    pattern: /\/\/.*|\/\*[^]*?\*\//,
-    multiline: true,
-    greedy: true,
-  },
-  number: /\b(?:0[xX][0-9a-fA-F_]+|[0-9][0-9_]*)\b/,
+  number: /\b(?:0[xX][0-9a-fA-F_]+|0[bB][01_]+|0[oO][0-7_]+|[0-9][0-9_]*)\b/,
   operator:
     /[+\-*?%!\^~]|<[<=]?|>[>=]?|=[=>]?|!=?|\.(?:\.\.)?|::|->?|&&?|\|\|?/,
   punctuation: /[(){}[\],:]/,

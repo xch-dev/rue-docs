@@ -4,9 +4,9 @@ slug: /functions
 
 # Functions
 
-A [function](<https://en.wikipedia.org/wiki/Function_(computer_programming)>) is a self contained part of a program. You can break up complex code into multiple programs to make it more readable, or use recursive functions to implement looping.
+A [function](<https://en.wikipedia.org/wiki/Function_(computer_programming)>) is a self contained part of a program. You can break up complex code into multiple functions to make it more readable, or use recursive functions to implement looping.
 
-Function items can be declared at the top level:
+Function items can be declared at the top level of a file or module:
 
 ```rue
 fn add(a: Int, b: Int) -> Int {
@@ -17,12 +17,38 @@ fn add(a: Int, b: Int) -> Int {
 And they can be called by other functions:
 
 ```rue
-add(42, 34)
+fn main() -> Int {
+    add(42, 34)
+}
 ```
+
+Every parameter must have a type. The return type comes after the `->`, and if it's omitted, the function returns `nil`. The last expression in the body (without a semicolon) is the value that the function returns, although you can also [return early](/docs/control-flow.md#return).
+
+Functions can be declared in any order, and can call themselves recursively:
+
+```rue
+fn factorial(num: Int) -> Int {
+    if num > 1 {
+        num * factorial(num - 1)
+    } else {
+        1
+    }
+}
+```
+
+:::info
+CLVM doesn't have loops, so recursion is how you iterate over a list or repeat a computation in Rue.
+:::
 
 ## Entrypoints
 
-The `main` function is the primary entrypoint to your program. It's used to determine which symbols are used and its body is compiled verbatim (along with any functions and constants it depends on) rather than being called.
+An entrypoint is a function that's compiled as a standalone program, rather than being called by another function. Its parameters are read from the program's solution (or for a puzzle, the curried arguments followed by the solution) as a list, and its return value is the output of the program.
+
+Only entrypoints, and the functions and constants they depend on, are included in the compiled output. Anything that isn't used is removed.
+
+### Main Function
+
+The `main` function is the primary entrypoint to your program. Its body is compiled directly (along with any functions and constants it depends on) rather than being called.
 
 For example, the following program:
 
@@ -36,9 +62,7 @@ Will compile to the CLVM `(q . 42)`.
 
 ### Test Functions
 
-Another form of entrypoint (which behaves like `main`) is a test function.
-
-This lets you write unit tests directly in your Rue code:
+Another kind of entrypoint is a test function, which lets you write unit tests directly alongside your Rue code:
 
 ```rue
 test fn verify() {
@@ -46,7 +70,7 @@ test fn verify() {
 }
 ```
 
-When you run `rue test`, all of the tests in the file will be executed. If they raise an error, the line number of the assertion will be included in the error message.
+When you run `rue test`, all of the tests in the project will be executed. See [Testing](/docs/testing.md) for more details.
 
 ### Exported Functions
 
@@ -58,13 +82,15 @@ export fn puzzle() -> List<Condition> {
 }
 ```
 
-If you run `rue build -e puzzle`, it will build this export as if it were the main function. This lets you include multiple programs inside of a single file.
+If you run `rue build --export puzzle`, it will build this export as if it were the main function. This lets you include multiple programs in a single project.
+
+The `export` keyword also makes the function visible to other [modules](/docs/modules.md).
 
 ## Inline Functions
 
 You can mark a function as `inline`. This will change the behavior of the compiler to insert the function body everywhere it's referenced, substituting each of the parameters with the corresponding arguments in the function call, instead of defining the function separately and calling it.
 
-As an example, this will insert the parameter value `num + 10` four times, twice for each multiplication, rather than defining the function once and calling it twice:
+As an example, this will insert the argument `num + 10` four times, twice for each multiplication, rather than defining the function once and calling it twice:
 
 ```rue
 fn main(num: Int) -> Int {
@@ -84,11 +110,13 @@ A recursive function cannot be marked as `inline`.
 The compiler will automatically inline functions if they are referenced a single time and their parameters are referenced a single time.
 :::
 
-## Extern Functions
+## Parameter Layout
 
-Function parameters are optimized into an efficient binary tree structure, as long as the function is neither an entrypoint, nor used as a closure. This binary tree optimization is not allowed for those because it's an implementation detail of the compiler and hard to rely on as a public interface. For example, if you accept a function as an argument, its arguments must be in the expected layout.
+Most functions are only ever called by your own code, so the compiler is free to choose how their arguments are passed. Parameters of these functions are stored in an efficient binary tree structure, rather than a list, which makes them cheaper to access.
 
-The compiler will pick the optimized parameter layout automatically when it can, but you can opt out of this with the `extern` keyword:
+This isn't possible for entrypoints, or functions that are used as values (such as [closures](#closures), or functions passed as arguments), since other programs need to know how to call them. Those always use the standard list layout, where the arguments are a nil-terminated list.
+
+The compiler picks the layout automatically, but you can force a function to use the standard list layout with the `extern` keyword:
 
 ```rue
 extern fn add(a: Int, b: Int) -> Int {
@@ -98,32 +126,32 @@ extern fn add(a: Int, b: Int) -> Int {
 
 Just keep in mind that this can increase the size of the generated program, as well as its runtime CLVM cost.
 
-### Spread Syntax
+### Spread Parameters
 
-Although it's not very useful for optimized functions (since the parameter layout is managed by the compiler anyways), you can remove the nil terminator from the parameter list in an extern function by using the spread operator. You can think of this as binding a parameter to the "rest" of the parameters in CLVM.
+You can mark the last parameter with the spread operator (`...`), which binds it to the rest of the arguments, rather than to a single argument. In CLVM terms, this removes the nil terminator from the parameter list.
 
 For example:
 
 ```rue
-extern fn sum(...numbers: List<Int>) -> Int {
+extern fn sum_all(...numbers: List<Int>) -> Int {
     if numbers is nil {
         0
     } else {
-        numbers.first + sum(...numbers.rest)
+        numbers.first + sum_all(...numbers.rest)
     }
 }
 ```
 
-However, Rue does not allow you to specify an arbitrary number of arguments, and will force you to use the spread syntax on a list manually.
-
-So, this can be called like this:
+Rue doesn't allow you to pass an arbitrary number of arguments directly. Instead, when a function has a spread parameter, the last argument you pass to it must also be spread:
 
 ```rue
-let list = [1, 2, 3, 4, 5];
-let total = sum(...list);
+fn main() -> Int {
+    let list = [1, 2, 3, 4, 5];
+    sum_all(...list)
+}
 ```
 
-It's also possible to use the spread syntax with non-list types, which allows for flexibility with external functions:
+It's also possible to use the spread syntax with non-list types, which allows for flexibility with external programs:
 
 ```rue
 fn main(
@@ -144,13 +172,30 @@ struct Solution {
 
 fn main(...solution: Solution) -> List<Condition> {
     let message = tree_hash(solution.conditions);
-    let agg_sig = AggSigMe {
-        public_key: solution.public_key,
-        message,
-    };
+    let agg_sig = AggSigMe { public_key: solution.public_key, message };
     [agg_sig, ...solution.conditions]
 }
 ```
+
+## External Functions
+
+An `extern` function can also be loaded from a program that's already been compiled, instead of being written in Rue. The program is read from a hex file (such as one produced by `rue build --hex`, or the `.hex` files in the [chia_puzzles](https://github.com/Chia-Network/chia_puzzles) repository), with a path relative to the source file:
+
+```rue
+extern fn add(a: Int, b: Int) -> Int from "./add.hex";
+
+fn main() -> Int {
+    add(20, 22)
+}
+```
+
+The signature of the function is up to you, and isn't checked against the program, so make sure that it matches the parameters the program actually expects. The program is called with its arguments in the standard list layout.
+
+An external function can be used like any other function, including as a value. For example, `tree_hash(add)` computes the puzzle hash of the program at compile time.
+
+:::note
+The path must be relative and end in `.hex`, and the file must contain a valid serialized CLVM program.
+:::
 
 ## Closures
 
@@ -159,8 +204,20 @@ Because functions can be passed around as values, it's sometimes useful to be ab
 You can do this with a lambda:
 
 ```rue
-let adder = fn(a: Int, b: Int) => a + b;
-let sum = adder(42, 34);
+fn main() -> Int {
+    let adder = fn(a: Int, b: Int) => a + b;
+    adder(42, 34)
+}
+```
+
+The parameter types can be left out if they can be inferred from the expected type, and you can specify the return type after the parameters with a `:`:
+
+```rue
+fn main() -> Int {
+    let double: fn(value: Int) -> Int = fn(value) => value * 2;
+    let triple = fn(value: Int): Int => value * 3;
+    double(1) + triple(2)
+}
 ```
 
 :::warning
@@ -185,3 +242,31 @@ fn create_adder(a: Int) -> fn(b: Int) -> Int {
 ```
 
 In this case, `create_adder` returns a closure which captures the value of `a` into the lambda function.
+
+## Function Types
+
+The type of a function is written like its signature, with the `fn` keyword, parameter names, and the return type:
+
+```rue
+type Operation = fn(a: Int, b: Int) -> Int;
+
+fn apply(operation: Operation, a: Int, b: Int) -> Int {
+    operation(a, b)
+}
+
+fn multiply(a: Int, b: Int) -> Int {
+    a * b
+}
+
+fn main() -> Int {
+    apply(multiply, 6, 7)
+}
+```
+
+The return type of a function type is required. A function type can also have a spread parameter (such as `fn(...solution: Any) -> List<Condition>`), and can be [generic](/docs/type-system/generics.md#generic-function-types).
+
+A function can be assigned to a function type if it accepts at least the same arguments, and returns a compatible value. So a function that accepts `Bytes` can be used where a function that accepts `Bytes32` is expected, but not the other way around.
+
+:::note
+A function value is just a compiled CLVM program at runtime, so there's no way to check whether an arbitrary value is a function. See [Type Guards](/docs/type-system/guards.md#limitations).
+:::

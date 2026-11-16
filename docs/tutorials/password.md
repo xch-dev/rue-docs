@@ -6,8 +6,8 @@ Before we get started, make sure you have [installed Rue](/docs/installation.md)
 
 This was last tested with the following versions:
 
-- **Rue**: 0.6.0
-- **Wallet SDK**: 0.32.0
+- **Rue**: 0.12.0
+- **Wallet SDK**: 0.38.0
 
 :::warning
 This is for educational purposes only. It's not secure enough to be used in production, so we'll be using a local simulator instead.
