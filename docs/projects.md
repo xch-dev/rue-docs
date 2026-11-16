@@ -33,7 +33,7 @@ When you run a command such as `rue build` or `rue test`, the CLI searches for t
 
 ## Manifest
 
-The `Rue.toml` file configures the compiler, the formatter, and which lints are reported. Here's what `rue init` generates:
+The `Rue.toml` file configures the compiler, the formatter, and which lints are reported. The `[compiler]` section is required, but all of its keys are optional. Here's what `rue init` generates:
 
 ```toml
 [compiler]
@@ -47,12 +47,12 @@ indent_width = 4
 
 ### Compiler
 
-| Key          | Default     | Description                                                                                                                                     |
-| ------------ | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `version`    | Not set     | The version of Rue that the project is written for. If it's set and doesn't match the installed version of the CLI, `rue build` fails.          |
-| `entrypoint` | `"puzzles"` | The directory (or file) containing the source code, relative to `Rue.toml`.                                                                     |
-| `std`        | `true`      | Whether to include the [standard library](/docs/standard-library.md). Set this to `false` to only have access to [builtins](/docs/builtins.md). |
-| `dist_dir`   | Not set     | The directory that `rue build --all` writes compiled programs to. If it's not set, each program is written next to its source file.             |
+| Key          | Default     | Description                                                                                                                                                                            |
+| ------------ | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `version`    | Not set     | The version of Rue that the project is written for. If it's set and doesn't match the installed version of the CLI, `rue build` fails (`rue test` doesn't check it).                   |
+| `entrypoint` | `"puzzles"` | The directory (or file) containing the source code, relative to `Rue.toml`.                                                                                                            |
+| `std`        | `true`      | Whether to include the [standard library](/docs/standard-library.md). Set this to `false` to only have access to [builtins](/docs/builtins.md).                                        |
+| `dist_dir`   | Not set     | The directory that `rue build --all` writes compiled programs to, relative to the directory the command is run from. If it's not set, each program is written next to its source file. |
 
 ### Formatter
 
@@ -103,4 +103,4 @@ rue build --all
 
 This compiles the `main` function of every file, as well as every exported function in `main.rue`, and writes each one as a hex file. Add `--hash` to also write the tree hash of each program.
 
-By default, the files are written next to their source file (such as `puzzles/main.rue.hex`). If `dist_dir` is set in `Rue.toml`, they are all written to that directory instead, and are named after the file or export (such as `dist/main.rue.hex` and `dist/my_puzzle.rue.hex`).
+By default, the files are written next to their source file, and exports are prefixed with the name of the file they're in (such as `puzzles/main.rue.hex` and `puzzles/main.rue_my_puzzle.rue.hex`). If `dist_dir` is set in `Rue.toml`, they are all written to that directory instead, and are named after just the file or export (such as `dist/main.rue.hex` and `dist/my_puzzle.rue.hex`). Since those names can collide, two programs with the same name are an error.

@@ -70,7 +70,7 @@ fn main() -> String {
 You can import multiple items at once:
 
 ```rue
-import utils::{greet, exclaim};
+import utils::{exclaim, greet};
 
 fn main() -> String {
     exclaim(greet("Alice"))
@@ -96,8 +96,8 @@ A name can refer to both a symbol (such as a function or constant) and a type (s
 It's possible to re-export items, which makes them available to other modules as if they were declared in the current module:
 
 ```rue
-export utils::greet;
 export conditions::*;
+export utils::greet;
 ```
 
 This is how the standard library's prelude makes everything available in one place.

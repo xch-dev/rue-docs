@@ -140,7 +140,7 @@ At runtime, `true` is represented as `1`, and `false` is represented as `nil`.
 
 ## Length
 
-Every atom has a `length` field, which returns the number of bytes in the value as an `Int`:
+Every atom type has a `length` field (except for unions of atoms such as `Bool`, which need to be cast first), which returns the number of bytes in the value as an `Int`:
 
 ```rue
 fn main(value: Bytes) -> Int {

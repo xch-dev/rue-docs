@@ -21,7 +21,7 @@ Division rounds towards negative infinity, and the remainder has the same sign a
 :::note
 The `+` operator can also be used with `Bytes` (or `String`) values to concatenate them together.
 
-The `+` and `-` operators can be used with `PublicKey` or `Signature` values to perform BLS point addition and subtraction. The `*` operator can multiply a `PublicKey` or `Signature` by an `Int` scalar.
+The `+` and `-` operators can be used with `PublicKey` or `Signature` values to perform BLS point addition and subtraction. The `*` operator can multiply a `PublicKey` or `Signature` by an `Int` scalar, with the point on the left (such as `public_key * 2`).
 :::
 
 ### Unary
@@ -110,4 +110,6 @@ Operators are listed from highest to lowest precedence. Operators with the same 
 
 :::tip
 Since `is` and `as` bind more tightly than prefix operators, `!value is Int` is parsed as `!(value is Int)`. Writing the parentheses explicitly makes this easier to read.
+
+Also, the type after `is` or `as` can be a union, so `value is Int | other` is read as a guard against the type `Int | other`. Use parentheses when combining a guard or cast with `|`, such as `(value is Int) | (other is Int)`.
 :::

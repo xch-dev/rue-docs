@@ -47,10 +47,10 @@ fn first(value: (Int, Bytes) | (Bytes32, nil)) -> Int | Bytes32 {
 }
 ```
 
-This doesn't apply to unions of different structs, since each struct's fields are only known after narrowing to that struct.
+However, named fields can't be accessed on a union of different structs, even if every struct has a field with that name. Narrow it to one of the structs first.
 
 ## Optional Values
 
 A union with `nil` is the idiomatic way to represent a value that may not be present, like `Option` or `null` in other languages.
 
-However, keep in mind that `nil` has the same runtime representation as `0`, `false`, and the empty string. So it's only possible to tell `nil` apart from types that never have that value, such as `Bytes32`, pairs, or structs. A union like `Int | nil` can't be narrowed, since every `nil` is also a valid `Int`. See [Type Guards](/docs/type-system/guards.md#limitations) for more details.
+However, `nil` is the same value as `0`, `false`, and `""` at runtime, so a union like `Int | nil` can't be narrowed. Use a type that never has that value instead, such as `Bytes32`, a pair, or a struct. See [Overlapping Values](/docs/type-system/guards.md#overlapping-values).

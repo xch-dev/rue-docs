@@ -10,7 +10,7 @@ The `rue` command line tool is installed with `cargo install rue-cli` (see [Inst
 | -------------------------------- | ----------------------------------------------------------------- |
 | `rue init [path]`                | Create a new project with a `Rue.toml` manifest.                  |
 | `rue build [file]`               | Compile the project (or a single file) and print the CLVM output. |
-| `rue test [file]`                | Run every `test fn` in the project (or a single file).            |
+| `rue test [file]`                | Run every `test fn` in the project.                               |
 | `rue fmt [paths...] [--check]`   | Format Rue source files, or check that they're already formatted. |
 | `rue debug <program> [solution]` | Run a CLVM program against a solution and print the result.       |
 | `rue lints`                      | List every lint and its default level, and the lint groups.       |
@@ -49,7 +49,7 @@ rue build puzzles/other.rue
 | `-A`, `--allow`  | Allow a lint or lint group. Can be repeated.                                                                                             |
 | `-W`, `--warn`   | Report a lint or lint group as a warning. Can be repeated.                                                                               |
 | `-D`, `--deny`   | Report a lint or lint group as an error, which fails compilation. Can be repeated.                                                       |
-| `-F`, `--forbid` | Like `--deny`, but the level can't be changed by attributes. Can be repeated.                                                            |
+| `-F`, `--forbid` | Like `--deny`, but attributes and later flags can't change the level. Can be repeated.                                                   |
 
 :::note
 Since `-h` is short for `--hash`, the help text for `rue build` is only available as `--help`.
@@ -59,14 +59,14 @@ Errors and warnings are printed with the file, line, and column they occurred at
 
 ## `rue test`
 
-Compiles the project in debug mode, and runs every [test function](/docs/testing.md) in it. If you pass a file, only the tests in that file are run.
+Compiles the project in debug mode, and runs every [test function](/docs/testing.md) in it. If you pass a file, it's used to find the project, and all of that project's tests are run. A file that isn't part of a project is tested by itself.
 
 ```bash
 $ rue test
 Running test `factorial_works` (1/1)
 ```
 
-A test passes if it finishes without raising an error. The command fails if any of the tests fail.
+A test passes if it finishes without raising an error and returns `nil`. The command fails if any of the tests fail.
 
 | Flag                   | Description                                                                                                  |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------ |

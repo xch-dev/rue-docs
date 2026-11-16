@@ -76,6 +76,10 @@ fn add(x: Int | (Int, Int), y: Int | (Int, Int)) -> Int {
 }
 ```
 
+:::warning
+The type after `is` can be a union, so a `|` directly after a guard is read as part of the type. Wrap each guard in parentheses before combining them with `|`, such as `(x is Int) | (y is Int)`. The same applies to casts with `as`.
+:::
+
 ### Fields
 
 You can also guard a field of a pair or struct, such as `pair.first` or `point.x`. This narrows the type of that field wherever it's accessed through the same value:

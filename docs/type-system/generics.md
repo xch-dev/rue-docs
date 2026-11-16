@@ -44,7 +44,7 @@ The types are inferred from every argument, as well as the expected return type 
 
 ### Explicit Arguments
 
-If a type parameter can't be inferred (for example, if it's only used in the return type), you need to specify the generic arguments explicitly with `::<...>` (known as the turbofish syntax):
+If a type parameter can't be inferred from the arguments or the expected type, you need to specify the generic arguments explicitly with `::<...>` (known as the turbofish syntax):
 
 ```rue
 fn empty<T>() -> List<T> {
@@ -52,7 +52,8 @@ fn empty<T>() -> List<T> {
 }
 
 fn main() -> List<Bytes> {
-    empty::<Bytes>()
+    let items = empty::<Bytes>();
+    ["hello", ...items]
 }
 ```
 

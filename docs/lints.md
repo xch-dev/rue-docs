@@ -40,6 +40,8 @@ unused_binding = "allow"
 unnecessary_cast = "allow"
 ```
 
+The `[lints]` section goes alongside the `[compiler]` section, which every `Rue.toml` must have.
+
 Within `Rue.toml`, a lint's own level takes precedence over the level of its group, regardless of the order they're written in. Here every `unused_*` lint is denied, except for `unused_binding`. The exception is a forbidden group, whose lints can't be set to any other level, so `unused = "forbid"` with `unused_binding = "allow"` is an error.
 
 ### Command Line
@@ -184,7 +186,7 @@ fn main(_curried_value: Bytes32, amount: Int) -> Int {
 | `inline_if_may_raise`     | warn    | `inline if` branches that can raise, even though both are always evaluated                       |
 | `self_comparison`         | warn    | Comparisons and operations between an expression and itself, which always have the same result   |
 | `identical_branches`      | warn    | `if` expressions whose branches are the same, so the condition has no effect                     |
-| `duplicate_condition`     | warn    | Conditions in an `else if` chain, `&&` or `                                                      |     | ` that repeat an earlier one |
+| `duplicate_condition`     | warn    | Conditions in an `else if` chain, `&&` or `\|\|` that repeat an earlier one                      |
 | `unconditional_recursion` | warn    | Functions that call themselves on every path, so they never return                               |
 | `bytes_int_confusion`     | warn    | Casts of byte literals to `Int` whose value is negative or not in canonical form                 |
 

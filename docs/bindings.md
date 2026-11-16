@@ -84,7 +84,7 @@ The compiler will automatically inline `let` bindings if they are only reference
 
 ## Unused Bindings
 
-The compiler warns about bindings and parameters that are never used. If a binding or parameter is intentionally unused (for example, a parameter that's only there to match the layout of a solution), you can prefix its name with an underscore to silence the warning:
+The compiler warns about bindings and parameters that are never used. If a binding or parameter is intentionally unused (for example, a parameter that's only there to match the layout of a solution), you can prefix its name with an underscore to silence the warning (see [Unused Code](/docs/lints.md#unused-code)):
 
 ```rue
 fn main(_unused: Int, value: Int) -> Int {

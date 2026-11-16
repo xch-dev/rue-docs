@@ -27,10 +27,10 @@ You can run every test in the project with:
 rue test
 ```
 
-Or only the tests in a single file:
+If you pass a file or directory, it's used to find the project, and all of that project's tests are run. A file that isn't part of a project is tested by itself:
 
 ```bash
-rue test puzzles/utils.rue
+rue test scratch.rue
 ```
 
 ## How Tests Run

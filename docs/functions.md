@@ -191,7 +191,7 @@ fn main() -> Int {
 
 The signature of the function is up to you, and isn't checked against the program, so make sure that it matches the parameters the program actually expects. The program is called with its arguments in the standard list layout.
 
-An external function can be used like any other function, including as a value. For example, `tree_hash(add)` computes the puzzle hash of the program at compile time.
+An external function can be used like any other function, including as a value. For example, `tree_hash(add)` computes the puzzle hash of the program, and `const { tree_hash(add) }` does so at compile time (see [Const Expressions](/docs/constants.md#const-expressions)).
 
 :::note
 The path must be relative and end in `.hex`, and the file must contain a valid serialized CLVM program.
@@ -265,7 +265,7 @@ fn main() -> Int {
 
 The return type of a function type is required. A function type can also have a spread parameter (such as `fn(...solution: Any) -> List<Condition>`), and can be [generic](/docs/type-system/generics.md#generic-function-types).
 
-A function can be assigned to a function type if it accepts at least the same arguments, and returns a compatible value. So a function that accepts `Bytes` can be used where a function that accepts `Bytes32` is expected, but not the other way around.
+A function can be assigned to a function type if it has the same number of parameters, each parameter accepts at least the expected type, and it returns a compatible value. So a function that accepts `Bytes` can be used where a function that accepts `Bytes32` is expected, but not the other way around.
 
 :::note
 A function value is just a compiled CLVM program at runtime, so there's no way to check whether an arbitrary value is a function. See [Type Guards](/docs/type-system/guards.md#limitations).

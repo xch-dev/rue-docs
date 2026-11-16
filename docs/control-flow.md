@@ -48,11 +48,7 @@ The example above is a great example of when you should use an `inline if` expre
 
 ```rue
 fn size(number: Int) -> String {
-    inline if number > 100 {
-        "large"
-    } else {
-        "small"
-    }
+    inline if number > 100 { "large" } else { "small" }
 }
 ```
 
