@@ -7,19 +7,29 @@ import TabItem from '@theme/TabItem';
 
 # Installation
 
+Rue is a statically typed programming language that compiles to [CLVM](https://chialisp.com/clvm) bytecode. It's designed as an alternative to [Chialisp](https://chialisp.com) for writing coin puzzles on the [Chia blockchain](https://chia.net).
+
 :::note
 Rue is still in active development. If you run into any issues, please report them in [GitHub issues](https://github.com/xch-dev/rue/issues).
 :::
 
+:::tip
+If you just want to try the language, the [Playground](https://play.rue-lang.com) runs the compiler entirely in your browser, with no installation required.
+:::
+
+## Command Line Tool
+
 First, you will need to install the [Rust toolchain](https://rustup.rs).
 
-You can install the Rue CLI with this command:
+Then you can install the Rue CLI from [crates.io](https://crates.io/crates/rue-cli):
 
 ```bash
 cargo install rue-cli
 ```
 
-It's also useful to install [clvm_tools_rs](https://github.com/Chia-Network/clvm_tools_rs):
+This installs the `rue` command, which includes the compiler, test runner, formatter, and CLVM debugger. See the [Command Line](/docs/cli.md) page for everything it can do.
+
+It's also useful to install [clvm_tools_rs](https://github.com/Chia-Network/clvm_tools_rs), which provides tools such as `brun` and `opd` for working with CLVM directly:
 
 ```bash
 cargo install clvm_tools_rs
@@ -27,60 +37,47 @@ cargo install clvm_tools_rs
 
 ## Editor Support
 
-<Tabs>
-<TabItem value="vscode" label="VSCode" default>
+Rue has a language server, which provides diagnostics as you type, hover information, go to definition, find references, completions, formatting, and quick fixes for many lints.
 
-You will need to install [Visual Studio Code](https://code.visualstudio.com).
-
-Then, you can install the [Rue extension](https://marketplace.visualstudio.com/items?itemName=Rigidity.rue-language) on the VSCode marketplace. It provides syntax highlighting and LSP integration.
-
-You can install the Rue language server with this command:
+You can install it with this command:
 
 ```bash
 cargo install rue-lsp
 ```
 
-This should automatically work with the extension.
+<Tabs>
+<TabItem value="vscode" label="VSCode" default>
+
+You will need to install [Visual Studio Code](https://code.visualstudio.com).
+
+Then, you can install the [Rue extension](https://marketplace.visualstudio.com/items?itemName=Rigidity.rue-language) on the VSCode marketplace. It provides syntax highlighting, and uses the `rue-lsp` language server installed above.
 
 </TabItem>
 <TabItem value="cursor" label="Cursor">
 
 You will need to install [Cursor](https://cursor.com/).
 
-Then, you can install the [Rue extension](https://open-vsx.org/extension/Rigidity/rue-language) on the Open VSX marketplace. It provides syntax highlighting and LSP integration.
-
-You can install the Rue language server with this command:
-
-```bash
-cargo install rue-lsp
-```
-
-This should automatically work with the extension.
+Then, you can install the [Rue extension](https://open-vsx.org/extension/Rigidity/rue-language) on the Open VSX marketplace. It provides syntax highlighting, and uses the `rue-lsp` language server installed above.
 
 </TabItem>
 </Tabs>
 
 :::tip
-Any editor that supports Open VSX and VSCode extensions will likely support this.
+Any editor that supports Open VSX and VSCode extensions will likely support this. Other editors can run `rue-lsp` directly, since it communicates over the standard [Language Server Protocol](https://microsoft.github.io/language-server-protocol/).
 :::
 
 ## Hello World
 
 The simplest program in Rue is the classic "hello world" example.
 
-You can run the following command to setup a new project:
+You can run the following command to set up a new project:
 
 ```bash
-rue init
+rue init my-project
+cd my-project
 ```
 
-And then you can build it:
-
-```bash
-rue build
-```
-
-The `puzzles/main.rue` file should contain something like this:
+This creates a `Rue.toml` manifest, and a `puzzles/main.rue` file with the following contents:
 
 ```rue
 fn main() -> String {
@@ -88,4 +85,16 @@ fn main() -> String {
 }
 ```
 
-And the CLVM output when compiling it is `(q . "Hello, world!)"`.
+Now you can build it:
+
+```bash
+rue build
+```
+
+The output is the compiled CLVM program:
+
+```
+(q . "Hello, world!")
+```
+
+You can learn more about how projects are laid out on the [Projects](/docs/projects.md) page.

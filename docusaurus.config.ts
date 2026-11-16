@@ -50,6 +50,11 @@ const config: Config = {
           label: "Docs",
         },
         {
+          href: "https://play.rue-lang.com",
+          label: "Playground",
+          position: "left",
+        },
+        {
           href: "https://github.com/xch-dev/rue",
           label: "GitHub",
           position: "right",
@@ -65,6 +70,10 @@ const config: Config = {
             {
               label: "Installation",
               to: "/docs/installation",
+            },
+            {
+              label: "Playground",
+              href: "https://play.rue-lang.com",
             },
           ],
         },
