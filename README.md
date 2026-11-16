@@ -39,7 +39,7 @@ pnpm typecheck
 pnpm build
 ```
 
-The Rue examples in the docs are checked separately, since this needs the Rue CLI at the version in `.rue-version` (`cargo install rue-cli --version <version>`):
+CI also checks the Rue examples in the docs, with the Rue CLI at the version in `.rue-version`. To run the check locally, install that version (`cargo install rue-cli --version <version>`) and run:
 
 ```bash
 pnpm check:rue-examples

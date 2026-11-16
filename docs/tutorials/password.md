@@ -25,7 +25,7 @@ Open it in your editor of choice. You should see a `puzzles` directory with a `m
 
 You can replace the contents of `main.rue` with the following:
 
-{/* nofmt: rue fmt 0.12.0 breaks this signature inside `List<Condition>` instead of between the parameters. */}
+{/* nofmt: rue fmt breaks this signature inside `List<Condition>` instead of between the parameters (https://github.com/xch-dev/rue/issues/322). */}
 
 ```rue nofmt
 fn main(
