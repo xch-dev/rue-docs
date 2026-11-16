@@ -64,8 +64,9 @@ fn wrap<A, B>(value: A) -> (A, B | nil) {
     (value, nil)
 }
 
-fn main() -> (Int, Bytes | nil) {
-    wrap::<_, Bytes>(1)
+fn main() -> Int {
+    let pair = wrap::<_, Bytes>(1);
+    pair.first + 1
 }
 ```
 

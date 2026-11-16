@@ -59,7 +59,7 @@ Errors and warnings are printed with the file, line, and column they occurred at
 
 ## `rue test`
 
-Compiles the project in debug mode, and runs every [test function](/docs/testing.md) in it. If you pass a file, it's used to find the project, and all of that project's tests are run. A file that isn't part of a project is tested by itself.
+Compiles the project in debug mode, and runs every [test function](/docs/testing.md) in it. If you pass a file or directory, it's used to find the project, and all of that project's tests are run. A file that isn't part of a project is tested by itself.
 
 ```bash
 $ rue test

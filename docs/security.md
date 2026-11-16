@@ -13,11 +13,7 @@ While Rue's type system aims to provide the means to comprehensively check the t
 This means that a program like this is actually incorrect:
 
 ```rue
-fn main(
-    parent_coin_id: Bytes32,
-    puzzle_hash: Bytes32,
-    amount: Int,
-) -> Bytes32 {
+fn main(parent_coin_id: Bytes32, puzzle_hash: Bytes32, amount: Int) -> Bytes32 {
     sha256(parent_coin_id + puzzle_hash + amount as Bytes)
 }
 ```
@@ -31,11 +27,7 @@ This is what led to the [CAT1 vulnerability](https://www.chia.net/2022/07/29/cat
 The solution is to use a more general type and check the invariants you care about at runtime:
 
 ```rue
-fn main(
-    parent_coin_id: Bytes,
-    puzzle_hash: Bytes,
-    amount: Int,
-) -> Bytes32 {
+fn main(parent_coin_id: Bytes, puzzle_hash: Bytes, amount: Int) -> Bytes32 {
     assert parent_coin_id is Bytes32;
     assert puzzle_hash is Bytes32;
 
