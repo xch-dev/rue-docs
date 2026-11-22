@@ -210,7 +210,7 @@ fn main() -> Int {
 }
 ```
 
-The parameter types can be left out if they can be inferred from the expected type, and you can specify the return type after the parameters with a `:`:
+The parameter types can be left out if a function type is expected of the lambda, such as the type of the binding it's assigned to, or of the parameter it's passed for. That includes a parameter of a generic function, whose type parameters are [inferred from the other arguments](/docs/type-system/generics.md#lambda-parameters). You can specify the return type after the parameters with a `:`:
 
 ```rue
 fn main() -> Int {
