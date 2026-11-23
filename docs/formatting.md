@@ -38,12 +38,30 @@ The formatter can be configured in the `[formatter]` section of [`Rue.toml`](/do
 [formatter]
 max_width = 100
 indent_width = 4
+single_quote = false
 ```
 
-| Key            | Default | Description                                              |
-| -------------- | ------- | -------------------------------------------------------- |
-| `max_width`    | `100`   | The maximum width of a line before it's broken up.       |
-| `indent_width` | `4`     | The number of spaces used for each level of indentation. |
+| Key            | Default | Description                                                                                                   |
+| -------------- | ------- | ------------------------------------------------------------------------------------------------------------- |
+| `max_width`    | `100`   | The maximum width of a line before it's broken up.                                                            |
+| `indent_width` | `4`     | The number of spaces used for each level of indentation.                                                      |
+| `single_quote` | `false` | Whether strings are written with `'` rather than `"` when neither needs fewer escapes. See [Quotes](#quotes). |
+
+## Quotes
+
+Strings can be written with either `"` or `'`, and mean the same thing either way. The formatter writes each string with the quote that needs fewer escapes, so a string that contains `"` is written with `'`, and the other way around:
+
+```rue
+fn greeting() -> String {
+    "it's"
+}
+
+fn quoted() -> String {
+    'say "hi"'
+}
+```
+
+When both quotes need the same number of escapes, it uses `"`, or `'` if `single_quote = true`. It only changes the quotes and the escapes of the quote characters, never the value of the string, and leaves other escapes as they're written.
 
 ## Editor Integration
 

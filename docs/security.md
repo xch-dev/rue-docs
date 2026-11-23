@@ -51,9 +51,33 @@ The same applies to the structure of values. If a parameter is declared as a str
 
 When in doubt, accept a broader type (such as `Any`) and narrow it with a [type guard](/docs/type-system/guards.md), which emits the runtime checks for you.
 
+## Checks in Release Builds
+
+Release builds are heavily optimized, but the optimizer never removes or skips a check that can fail. If a function call, assertion, or other expression can raise an error, it's still evaluated in the release build, even if its value is never used or the binding it's assigned to is inlined. So this program rejects the wrong password in both debug and release builds, even though `_checked` isn't used:
+
+```rue
+fn check_password(password: Bytes) -> Bool {
+    assert sha256(password) == 0x2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824;
+    true
+}
+
+fn main(password: Bytes) -> Int {
+    let _checked = check_password(password);
+    42
+}
+
+test fn accepts_password() {
+    assert main("hello") == 42;
+}
+```
+
+This means you can rely on a release build to fail whenever the debug build does, as long as the solution matches the types you declared (and, before hard fork 2, as long as the `operand_limits` option is on if mainnet's [operand limits](/docs/builtins.md#operand-limits) matter to your puzzle). Expressions that can't fail, such as `a + b`, can still be left out when their values aren't used.
+
 ## Other Things to Watch Out For
 
-- `inline if` evaluates both branches, so an error in the branch that isn't selected still causes the program to raise. See [Inline If](/docs/control-flow.md#inline-if).
+- `inline if` and `inline match` evaluate every branch, so an error in a branch that isn't selected still causes the program to raise. See [Inline If](/docs/control-flow.md#inline-if) and [Inline Match](/docs/match.md#inline-match).
+- `&` and `|` always evaluate both sides, so the right side raises even when the left side decides the result, and `&&` and `||` return their right side as is, which may not be `true` or `false` if it's an untrusted `Bool`. See [Logical Operators](/docs/operators.md#logical).
+- Until hard fork 2, mainnet rejects some long operands of `*`, `/`, `%`, and a few builtins, which Rue doesn't check for by default. See [Operand Limits](/docs/builtins.md#operand-limits).
 - `nil`, `0`, `false`, and `""` are the same value at runtime, so a type guard can't distinguish between them. See [Type Guards](/docs/type-system/guards.md#overlapping-values).
 - Byte values with leading zeros aren't equal to the integer they appear to represent. See [Int](/docs/type-system/atoms.md#int).
 - `unchecked_cast` bypasses the type system entirely. See [Unchecked Casts](/docs/type-system/casting.md#unchecked-casts).

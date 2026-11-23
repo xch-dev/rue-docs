@@ -43,9 +43,64 @@ The output shows each test as it runs, and the reason for any failure. For examp
 Running test `factorial_works` (1/2)
 Running test `factorial_fails` (2/2)
 Test failed due to raise: "assertion failed at main.rue:15:5"
+  main.rue:15:5, in factorial_fails
+    assert factorial(3) == 7;
 ```
 
-Since tests are compiled in debug mode, failed assertions and `raise` statements include the location they occurred at, and [debug statements](/docs/debugging.md) print their values as the test runs.
+Since tests are compiled in debug mode, failed assertions and `raise` statements include the location they occurred at, along with the message of an [assert](/docs/control-flow.md#assert) that has one, and [debug statements](/docs/debugging.md) print their values as the test runs.
+
+If the project's `Rue.toml` sets a `version`, `rue test` fails unless it matches the version of the CLI, the same as `rue build`.
+
+## Stack Traces
+
+When a test fails by raising an error, the output includes a stack trace, which lists the functions that were running when it failed, from the test itself to the innermost function. Each one shows the line it was running, and the values of its parameters:
+
+```rue
+fn factorial(num: Int) -> Int {
+    assert num >= 0, "factorial of a negative number";
+
+    if num > 1 {
+        num * factorial(num - 1)
+    } else {
+        1
+    }
+}
+
+fn choose(n: Int, k: Int) -> Int {
+    factorial(n) / (factorial(k) * factorial(n - k))
+}
+
+test fn choose_works() {
+    assert choose(5, 2) == 10;
+}
+```
+
+If there was also a test that called `choose` with `k` larger than `n`, which makes `factorial` fail:
+
+```rue ignore
+test fn choose_fails() {
+    assert choose(2, 5) == 0;
+}
+```
+
+The output shows each call that led to the failure:
+
+```
+Running test `choose_works` (1/2)
+Running test `choose_fails` (2/2)
+Test failed due to raise: ("assertion failed at main.rue:2:5" "factorial of a negative number")
+  main.rue:20:12, in choose_fails
+    assert choose(2, 5) == 0;
+  main.rue:12:36, in choose
+    factorial(n) / (factorial(k) * factorial(n - k))
+    n = 2
+    k = 5
+  main.rue:2:5, in factorial
+    assert num >= 0, "factorial of a negative number";
+    num = -3
+```
+
+A test that returns a value other than `nil` fails without a stack trace, since nothing went wrong while it ran. To see where a compiled program fails outside of a test, see [Debug Metadata](/docs/debugging.md#debug-metadata).
 
 Test functions aren't included when compiling the program normally, so they don't affect the size or cost of your puzzles.
 

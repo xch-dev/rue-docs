@@ -56,7 +56,7 @@ Among the flags, a lint's own flag takes precedence over its group's, unless the
 
 ### Attributes
 
-Levels can also be set in the source code, with an `allow`, `warn`, `deny` or `forbid` attribute on an item (such as a function, constant, struct, type alias, import or module) or a statement. The attribute applies to everything inside of what it's attached to, and the innermost one takes precedence over any outer attributes and the project's levels, whether it names a lint or a group. An attribute can list multiple lints, separated by commas:
+Levels can also be set in the source code, with an `allow`, `warn`, `deny` or `forbid` attribute on an item (such as a function, constant, struct, enum, type alias, import or module) or a statement. The attribute applies to everything inside of what it's attached to, and the innermost one takes precedence over any outer attributes and the project's levels, whether it names a lint or a group. An attribute can list multiple lints, separated by commas:
 
 ```rue warn
 #[deny(unused_binding)]
@@ -118,12 +118,12 @@ fn checked() -> Int {
 
 The `naming_convention` lint checks that names follow these conventions:
 
-| Kind                                     | Convention                                                  | Example       |
-| ---------------------------------------- | ----------------------------------------------------------- | ------------- |
-| Functions, modules, and bindings         | `snake_case`                                                | `tree_hash`   |
-| Structs, type aliases, and generic types | `UpperCamelCase`                                            | `CreateCoin`  |
-| Constants                                | `SCREAMING_SNAKE_CASE`                                      | `CREATE_COIN` |
-| Parameters and struct fields             | `snake_case`, `SCREAMING_SNAKE_CASE`, or `Title_Snake_Case` | `public_key`  |
+| Kind                                                           | Convention                                                  | Example       |
+| -------------------------------------------------------------- | ----------------------------------------------------------- | ------------- |
+| Functions, modules, and bindings                               | `snake_case`                                                | `tree_hash`   |
+| Structs, enums, enum variants, type aliases, and generic types | `UpperCamelCase`                                            | `CreateCoin`  |
+| Constants                                                      | `SCREAMING_SNAKE_CASE`                                      | `CREATE_COIN` |
+| Parameters and struct fields                                   | `snake_case`, `SCREAMING_SNAKE_CASE`, or `Title_Snake_Case` | `public_key`  |
 
 Parameters and struct fields can also use `SCREAMING_SNAKE_CASE`, since curried parameters are conventionally written that way (such as `MOD_HASH`), or `Title_Snake_Case`, which is conventionally used for truths (such as `Ephemeral_State`). A leading underscore isn't considered part of the name.
 
@@ -139,61 +139,77 @@ fn main(_curried_value: Bytes32, amount: Int) -> Int {
 
 ## List of Lints
 
+Most lints have the same default level for every program. The exception is `needless_keccak256_verify`, which is allowed by default, but warns by default when the project targets hard fork 2 (with `hard_fork_2 = true` in [`Rue.toml`](/docs/projects.md#compiler), or `--hard-fork-2`). Before hard fork 2, `keccak256_verify` is the only way to check a Keccak-256 hash, since `keccak256` is an error. After it, the same check can be written as `assert keccak256(value) == hash`, and the lint suggests that as a fix.
+
 ### Unused
 
-| Lint                  | Default | Description                                                                            |
-| --------------------- | ------- | -------------------------------------------------------------------------------------- |
-| `unused_function`     | warn    | Functions that are never used                                                          |
-| `unused_constant`     | warn    | Constants that are never used                                                          |
-| `unused_binding`      | warn    | Let bindings that are never used                                                       |
-| `unused_parameter`    | warn    | Function parameters that are never used                                                |
-| `unused_struct`       | warn    | Structs that are never used                                                            |
-| `unused_type_alias`   | warn    | Type aliases that are never used                                                       |
-| `unused_generic_type` | warn    | Generic type parameters that are never used                                            |
-| `unused_import`       | warn    | Imports that are never used                                                            |
-| `unused_value`        | warn    | Values returned by expression statements that are discarded                            |
-| `unused_struct_field` | warn    | Struct fields that are never read, in structs whose values are only ever read by field |
-| `unused_export`       | warn    | Exported items of a module that are only used inside of it                             |
+| Lint                   | Default | Description                                                                                                                    |
+| ---------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `unused_function`      | warn    | Functions that are never used                                                                                                  |
+| `unused_constant`      | warn    | Constants that are never used                                                                                                  |
+| `unused_binding`       | warn    | Let bindings that are never used                                                                                               |
+| `unused_parameter`     | warn    | Function parameters that are never used                                                                                        |
+| `unused_struct`        | warn    | Structs that are never used                                                                                                    |
+| `unused_type_alias`    | warn    | Type aliases that are never used                                                                                               |
+| `unused_enum`          | warn    | Enums that are never used                                                                                                      |
+| `unused_generic_type`  | warn    | Generic type parameters that are never used                                                                                    |
+| `unused_import`        | warn    | Imports that are never used                                                                                                    |
+| `unused_value`         | warn    | Values returned by expression statements that are discarded                                                                    |
+| `unused_struct_field`  | warn    | Struct fields that are never read, in structs whose values are only ever read by field                                         |
+| `unused_struct_spread` | warn    | Struct initializers that spread a value (`...value`) but specify every field that isn't a constant, so nothing is read from it |
+| `unused_export`        | warn    | Exported items of a module that are only used inside of it                                                                     |
 
 ### Style
 
-| Lint                    | Default | Description                                                                                         |
-| ----------------------- | ------- | --------------------------------------------------------------------------------------------------- |
-| `empty_generics`        | warn    | Empty generic parameter or argument lists                                                           |
-| `unnecessary_cast`      | warn    | Casts between types that are already compatible                                                     |
-| `unnecessary_guard`     | warn    | Type guards between types that are already compatible                                               |
-| `unnecessary_plus`      | warn    | Unary `+` operators, which have no effect                                                           |
-| `unnecessary_return`    | warn    | `return` statements directly in a function body, which can end in an expression instead             |
-| `bool_comparison`       | warn    | Comparisons with `true` or `false`, which can use the value or its negation instead                 |
-| `needless_bool`         | warn    | `if` expressions that return `true` and `false`, which can use the condition instead                |
-| `negated_condition`     | allow   | `if` expressions with a negated condition and an `else` branch, which can swap the branches instead |
-| `collapsible_if`        | warn    | `else` blocks that only contain an `if` expression, which can be written as `else if`               |
-| `manual_assert`         | warn    | `if` statements that only `raise`, which can be written as an `assert`                              |
-| `needless_let_return`   | warn    | Blocks that end by returning a binding declared directly before, which can end in its value instead |
-| `redundant_field_names` | warn    | Struct fields written as `name: name`, which can use the shorthand `name` instead                   |
-| `unnecessary_parens`    | warn    | Parentheses that don't change how an expression is evaluated                                        |
-| `naming_convention`     | warn    | Names that don't follow the naming convention for what they name                                    |
-| `shadowed_binding`      | allow   | Bindings and parameters that shadow another binding or parameter with the same name                 |
+| Lint                     | Default | Description                                                                                                         |
+| ------------------------ | ------- | ------------------------------------------------------------------------------------------------------------------- |
+| `empty_generics`         | warn    | Empty generic parameter or argument lists                                                                           |
+| `unnecessary_cast`       | warn    | Casts between types that are already compatible                                                                     |
+| `unnecessary_guard`      | warn    | Type guards between types that are already compatible                                                               |
+| `redundant_union_member` | warn    | Members of written union types whose values are all values of another member, so the union is the same without them |
+| `unnecessary_plus`       | warn    | Unary `+` operators, which have no effect                                                                           |
+| `unnecessary_return`     | warn    | `return` statements directly in a function body, which can end in an expression instead                             |
+| `bool_comparison`        | warn    | Comparisons with `true` or `false`, which can use the value or its negation instead                                 |
+| `needless_bool`          | warn    | `if` expressions that return `true` and `false`, which can use the condition instead                                |
+| `negated_condition`      | allow   | `if` expressions with a negated condition and an `else` branch, which can swap the branches instead                 |
+| `collapsible_if`         | warn    | `else` blocks that only contain an `if` expression, which can be written as `else if`                               |
+| `manual_assert`          | warn    | `if` statements that only `raise`, which can be written as an `assert`                                              |
+| `needless_let_return`    | warn    | Blocks that end by returning a binding declared directly before, which can end in its value instead                 |
+| `redundant_field_names`  | warn    | Struct fields written as `name: name`, which can use the shorthand `name` instead                                   |
+| `redundant_match_arm_as` | warn    | Struct bindings of match arms written after `as`, which they don't need                                             |
+| `unnecessary_parens`     | warn    | Parentheses that don't change how an expression is evaluated                                                        |
+| `naming_convention`      | warn    | Names that don't follow the naming convention for what they name                                                    |
+| `shadowed_binding`       | allow   | Bindings and parameters that shadow another binding or parameter with the same name                                 |
 
 ### Suspicious
 
-| Lint                      | Default | Description                                                                                      |
-| ------------------------- | ------- | ------------------------------------------------------------------------------------------------ |
-| `indistinguishable_guard` | warn    | Type guards that are always true at runtime                                                      |
-| `constant_condition`      | warn    | Conditions that always evaluate to the same value                                                |
-| `double_negation`         | warn    | Use of `--`, which could be confused with a decrement operator                                   |
-| `unreachable_code`        | warn    | Code after a `return`, `raise` or other expression that never finishes, which is never evaluated |
-| `inline_if_may_raise`     | warn    | `inline if` branches that can raise, even though both are always evaluated                       |
-| `self_comparison`         | warn    | Comparisons and operations between an expression and itself, which always have the same result   |
-| `identical_branches`      | warn    | `if` expressions whose branches are the same, so the condition has no effect                     |
-| `duplicate_condition`     | warn    | Conditions in an `else if` chain, `&&` or `\|\|` that repeat an earlier one                      |
-| `unconditional_recursion` | warn    | Functions that call themselves on every path, so they never return                               |
-| `bytes_int_confusion`     | warn    | Casts of byte literals to `Int` whose value is negative or not in canonical form                 |
+| Lint                             | Default | Description                                                                                                                                                                    |
+| -------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `indistinguishable_guard`        | warn    | Type guards that are always true at runtime                                                                                                                                    |
+| `constant_condition`             | warn    | Conditions that always evaluate to the same value                                                                                                                              |
+| `double_negation`                | warn    | Use of `--`, which could be confused with a decrement operator                                                                                                                 |
+| `unreachable_code`               | warn    | Code after a `return`, `raise` or other expression that never finishes, which is never evaluated                                                                               |
+| `inline_if_may_raise`            | warn    | `inline if` branches that can raise, even though both are always evaluated                                                                                                     |
+| `inline_match_may_raise`         | warn    | `inline match` arms that can raise, even though every arm is always evaluated                                                                                                  |
+| `bool_operator_may_raise`        | warn    | `&` and `\|` on `Bool` whose right operand can raise, even though it's evaluated when the left operand already decides the result                                              |
+| `inline_value_may_fail`          | warn    | `inline` bindings, constants and `inline fn` arguments that can fail, but aren't always evaluated, so their check can be skipped                                               |
+| `self_comparison`                | warn    | Comparisons and operations between an expression and itself, which always have the same result                                                                                 |
+| `identical_branches`             | warn    | `if` expressions whose branches are the same, so the condition has no effect                                                                                                   |
+| `duplicate_condition`            | warn    | Conditions in an `else if` chain, `&&` or `\|\|` that repeat an earlier one                                                                                                    |
+| `unreachable_match_arm`          | warn    | `match` arms that are never taken, since the arms before them handle every value they match                                                                                    |
+| `indistinguishable_match_arm`    | warn    | `match` arms that also handle other members of a union, since they can't be told apart from them at runtime                                                                    |
+| `indistinguishable_union_member` | warn    | Members of written union types whose values are all valid values of another member at runtime, such as `nil` in `Int \| nil`, so a type guard or `match` can't tell them apart |
+| `unconditional_recursion`        | warn    | Functions that call themselves on every path, so they never return                                                                                                             |
+| `bytes_int_confusion`            | warn    | Casts of byte literals to `Int` whose value is negative or not in canonical form                                                                                               |
+| `bracketed_for`                  | warn    | Lists whose only item is a `for` expression, which is a list already, so the brackets make a list with one list in it                                                          |
+| `prelude_over_enclosing_item`    | warn    | Names in inline modules that refer to the prelude or a builtin, while an enclosing module has an item with the same name, which inline modules don't see                       |
 
 ### Other
 
-| Lint                           | Default | Description                                                                      |
-| ------------------------------ | ------- | -------------------------------------------------------------------------------- |
-| `debug_statement`              | allow   | `debug` statements, which shouldn't be left in a release build                   |
-| `unknown_lint`                 | warn    | Lint names in attributes or `Rue.toml` that don't refer to a known lint or group |
-| `unfulfilled_lint_expectation` | warn    | `expect` attributes whose lint is never reported inside of them                  |
+| Lint                           | Default | Description                                                                                                                                                                         |
+| ------------------------------ | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `imprecise_narrowing`          | warn    | Type guards and `match` arms that leave too many combinations of a struct's fields to narrow it by, so the fields that are left are merged and the struct is wider than it could be |
+| `debug_statement`              | allow   | `debug` statements, which shouldn't be left in a release build                                                                                                                      |
+| `needless_keccak256_verify`    | allow   | `keccak256_verify` calls, which can be written as `assert keccak256(value) == hash` after hard fork 2 (warns by default with `hard_fork_2`)                                         |
+| `unknown_lint`                 | warn    | Lint names in attributes or `Rue.toml` that don't refer to a known lint or group                                                                                                    |
+| `unfulfilled_lint_expectation` | warn    | `expect` attributes whose lint is never reported inside of them                                                                                                                     |

@@ -20,7 +20,26 @@ fn main(person_a: String, person_b: String) -> (String, String) {
 
 A constant's value can be any expression, including calls to functions and references to other constants. However, a constant can't refer to itself, either directly or through other constants.
 
-## Inline Constants
+## Constants as Programs
+
+A constant can be compiled as a program on its own, like an [entrypoint](/docs/functions.md#entrypoints). Mark it with `export`, and build it with `rue build --export`:
+
+```rue
+export const ALLOWED_AMOUNTS: List<Int> = [100, 500, 1000];
+
+fn double(value: Int) -> Int {
+    value * 2
+}
+
+export const DOUBLE: fn(value: Int) -> Int = double;
+```
+
+How the program behaves depends on the constant's type:
+
+- If its type is a function type, the program behaves like that function, taking its arguments from the solution, just as if the function were `main`. So `rue build --export DOUBLE` compiles to `(* 2 (q . 2))`, which returns `42` when run with the solution `(21)`.
+- Otherwise, the program ignores its solution and returns the constant's value. So `rue build --export ALLOWED_AMOUNTS` compiles to `(q 100 500 1000)`.
+
+A constant named `main` (in place of a `main` function) is the program in the same way, although the `naming_convention` [lint](/docs/lints.md) warns that it isn't in `SCREAMING_SNAKE_CASE`, so exporting a constant is usually clearer.
 
 You can mark a constant as `inline`, which forces its value to be inserted everywhere it's referenced rather than being defined a single time and reused.
 
@@ -37,7 +56,7 @@ fn main(person_a: String, person_b: String) -> (String, String) {
 This should be used sparingly, since it can come with either a performance hit, an increase in compiled output size, or both. It's best suited for small values, like the condition opcodes in the [standard library](/docs/standard-library.md), which are cheaper to repeat than to reference.
 
 :::tip
-The compiler will automatically inline constants if they are only referenced a single time.
+When compiling normally (not in debug mode), the compiler will automatically inline constants if they are only referenced a single time.
 :::
 
 ## Const Expressions

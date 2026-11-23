@@ -50,13 +50,23 @@ fn main() -> (List<Int>, (List<Int>, List<Int>)) {
 }
 ```
 
-You can use the spread operator on the last item to prepend values to an existing list:
+You can use the spread operator to insert the items of an existing list. A spread can go anywhere in the list, and a list can have more than one:
 
 ```rue
 fn prepend(list: List<Int>) -> List<Int> {
     [1, 2, ...list]
 }
+
+fn surround(a: List<Int>, b: List<Int>) -> List<Int> {
+    [...a, 0, ...b]
+}
+
+test fn spreads_lists() {
+    assert deep_equal(surround([1, 2], [3]), [1, 2, 0, 3]);
+}
 ```
+
+A spread as the last item is used as the rest of the list as is, so it costs nothing. A spread before other items has to copy the items of its list in front of the items after it, which costs more at runtime. (A spread [`for` expression](/docs/loops.md#spreading) is the exception, since it builds its items directly in front of them.)
 
 Finally, there is a builtin recursive list type defined as such:
 
@@ -77,8 +87,25 @@ fn first_or_zero(list: List<Int>) -> Int {
 ```
 
 :::info
-CLVM doesn't have loops, so you iterate over a list with recursion. Each call handles the first item, and calls itself again with the rest of the list until it reaches `nil`.
+CLVM doesn't have loops, so going through a list means recursion: each call handles the first item, and calls itself again with the rest of the list until it reaches `nil`. A [`for` expression](/docs/loops.md) writes this recursion for you, to build a new list from the items, filter them or fold them into a single value.
 :::
+
+The prelude also has a few functions for working with lists:
+
+| Function                                           | Description                                    |
+| -------------------------------------------------- | ---------------------------------------------- |
+| `length<T>(list: List<T>) -> Int`                  | The number of items in the list.               |
+| `reverse<T>(list: List<T>) -> List<T>`             | The list's items in the opposite order.        |
+| `contains(list: List<Bytes>, item: Bytes) -> Bool` | Whether any of the items is equal to the item. |
+
+```rue
+test fn list_functions() {
+    let items: List<Bytes> = ["a", "b", "c"];
+    assert length(items) == 3;
+    assert deep_equal(reverse(items), ["c", "b", "a"]);
+    assert contains(items, "b");
+}
+```
 
 ### List Types
 

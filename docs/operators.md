@@ -16,7 +16,9 @@ slug: /operators
 | `/` | `4 / 2` | Divides two `Int` values and returns the quotient.     |
 | `%` | `3 % 2` | Divides two `Int` values and returns the remainder.    |
 
-Division rounds towards negative infinity, and the remainder has the same sign as the divisor. For example, `-200 / 3` is `-67`, and `-200 % 3` is `1`. You can use the [`divmod`](/docs/builtins.md#divmod) builtin to compute both at once.
+Division rounds towards negative infinity, and the remainder has the same sign as the divisor. For example, `-200 / 3` is `-67`, and `-200 % 3` is `1`. You can use the [`divmod`](/docs/builtins.md#divmod) builtin to compute both at once. Dividing by zero raises an error.
+
+Mainnet limits the length of the operands of `*`, `/` and `%` until hard fork 2. If your puzzle can be given long operands, see [Operand Limits](/docs/builtins.md#operand-limits).
 
 :::note
 The `+` operator can also be used with `Bytes` (or `String`) values to concatenate them together.
@@ -61,9 +63,26 @@ The `>>>` operator is a logical shift. Since it treats the value as unsigned, sh
 | `&`    | `true & false`    | Returns whether both `Bool` values are `true`, always evaluating both.                   |
 | `\|`   | `true \| false`   | Returns whether either `Bool` value is `true`, always evaluating both.                   |
 
+Both sides of each of these operators must be `Bool` values.
+
 The `&&` and `||` operators short-circuit, so the right side is only evaluated if it's needed to determine the result. This makes them safe to use when the right side depends on the left side, such as `value is Int && value > 5`. However, short-circuiting requires extra branching in the generated code.
 
-The `&` and `|` operators on `Bool` values are compiled to the CLVM `all` and `any` operators, which always evaluate both sides. They are cheaper when both sides are simple and can't raise an error.
+The `&` and `|` operators on `Bool` values are compiled to the CLVM `all` and `any` operators, which always evaluate both sides. They are cheaper when both sides are simple and can't raise an error. If the right side can raise, the `bool_operator_may_raise` [lint](/docs/lints.md) warns, since it raises even when the left side already decides the result. Use `&&` or `||` there instead:
+
+```rue
+fn is_positive(value: Int) -> Bool {
+    assert value != 0;
+    value > 0
+}
+
+fn main(enabled: Bool, value: Int) -> Bool {
+    enabled && is_positive(value)
+}
+```
+
+:::note
+When the left side doesn't decide the result, `&&` and `||` return the right side's value as it is, while `&` and `|` always return `true` or `false`. This only makes a difference for a value that isn't actually `true` or `false` at runtime, such as an untrusted `Bool` parameter (see [Security](/docs/security.md#untrusted-values)).
+:::
 
 ## Comparison
 
@@ -85,7 +104,7 @@ The comparison operators can also be used with `Bytes` values, which compares th
 | `==` | `1 == 2` | If the left side is equal to the right side.     |
 | `!=` | `1 != 2` | If the left side is not equal to the right side. |
 
-Both sides must be atoms of the same kind, such as `Int`, `Bytes`, `Bool`, `PublicKey`, or `Signature`. Atoms are compared by their bytes, so an `Int` and a `Bytes` value need to be cast to the same type before they can be compared.
+Both sides must be atoms of the same kind, such as `Int`, `Bytes`, `Bool`, `PublicKey`, or `Signature`. Atoms are compared by their bytes, so an `Int` and a `Bytes` value need to be cast to the same type before they can be compared. Values of an [enum](/docs/type-system/enums.md) whose variants have no fields are atoms too, so they can be compared with each other.
 
 To compare structs, pairs, or lists, use the [`deep_equal`](/docs/standard-library.md#utilities) function from the standard library, or compare their tree hashes.
 
@@ -93,23 +112,27 @@ To compare structs, pairs, or lists, use the [`deep_equal`](/docs/standard-libra
 
 Operators are listed from highest to lowest precedence. Operators with the same precedence are evaluated from left to right.
 
-| Operators                   | Description                        |
-| --------------------------- | ---------------------------------- |
-| `f()`, `.field`, `as`, `is` | Calls, field access, casts, guards |
-| `!`, `-`, `+`, `~` (prefix) | Unary operators                    |
-| `*`, `/`, `%`               | Multiplicative                     |
-| `+`, `-`                    | Additive                           |
-| `<<`, `>>`, `>>>`           | Shifts                             |
-| `&`                         | Bitwise or logical AND             |
-| `^`                         | Bitwise XOR                        |
-| `\|`                        | Bitwise or logical OR              |
-| `<`, `>`, `<=`, `>=`        | Comparison                         |
-| `==`, `!=`                  | Equality                           |
-| `&&`                        | Short-circuiting AND               |
-| `\|\|`                      | Short-circuiting OR                |
+| Operators                           | Description                                              |
+| ----------------------------------- | -------------------------------------------------------- |
+| `f()`, `x[i]`, `.field`, `as`, `is` | Calls, indexing and slicing, field access, casts, guards |
+| `!`, `-`, `+`, `~` (prefix)         | Unary operators                                          |
+| `*`, `/`, `%`                       | Multiplicative                                           |
+| `+`, `-`                            | Additive                                                 |
+| `<<`, `>>`, `>>>`                   | Shifts                                                   |
+| `&`                                 | Bitwise or logical AND                                   |
+| `^`                                 | Bitwise XOR                                              |
+| `\|`                                | Bitwise or logical OR                                    |
+| `<`, `>`, `<=`, `>=`                | Comparison                                               |
+| `==`, `!=`                          | Equality                                                 |
+| `&&`                                | Short-circuiting AND                                     |
+| `\|\|`                              | Short-circuiting OR                                      |
 
 :::tip
 Since `is` and `as` bind more tightly than prefix operators, `!value is Int` is parsed as `!(value is Int)`. Writing the parentheses explicitly makes this easier to read.
 
 Also, the type after `is` or `as` can be a union, so `value is Int | other` is read as a guard against the type `Int | other`. Use parentheses when combining a guard or cast with `|`, such as `(value is Int) | (other is Int)`.
+
+The `&` and `|` operators bind more tightly than comparisons, so `a > 0 & b > 0` is read as `a > (0 & b) > 0`, which doesn't compile. Write `(a > 0) & (b > 0)` instead.
 :::
+
+Indexing and slicing (`value[0]`, `value[1..4]`) apply to bytes, and are described in [Atoms](/docs/type-system/atoms.md). The `..` of a slice can only appear inside the brackets, so it isn't an operator of its own.

@@ -79,7 +79,7 @@ fn main(num: Int) -> Int {
 This should be used sparingly, since it can come with either a performance hit, an increase in compiled output size, or both.
 
 :::tip
-The compiler will automatically inline `let` bindings if they are only referenced a single time.
+When compiling normally (not in debug mode), the compiler will automatically inline `let` bindings if they are only referenced a single time.
 :::
 
 ## Unused Bindings
@@ -155,6 +155,10 @@ fn main() -> Int {
 }
 ```
 
+A spread in a list pattern must be the last item, since the length of the rest of the list isn't known.
+
+The same patterns also bind the item of a [`for` expression](/docs/loops.md#patterns) (as in `for (a, b) in pairs`), and the value of a [`match` arm](/docs/match.md#bindings) after its type.
+
 :::note
-When you destructure a value, it's first assigned to a temporary binding, and then that binding is referenced by each of the bindings in the destructuring pattern. Thus, if you're destructuring a non-inline variable, it's best to mark the destructured bindings as `inline` to reduce the size of the compiled program.
+A destructured value is evaluated once, however many of its parts you use and however often you read them. Each part reads from that one value, so destructuring the result of a function call doesn't call it again for each part. Marking a destructuring `let` as `inline` does the opposite: the value is inserted, and evaluated again, everywhere a part is read.
 :::

@@ -10,7 +10,7 @@ The standard library is included by default, and can be disabled by setting `std
 
 ## Prelude
 
-The items most commonly used in puzzles are in the prelude, which is available in every file without importing anything. This includes all of the [conditions](#conditions), [condition opcodes](#opcodes), [message flags](#message-flags), [tree hashing](#tree-hashing) functions, [merkle proofs](#merkle-proofs), and [utilities](#utilities).
+The items most commonly used in puzzles are in the prelude, which is available in every file without importing anything. This includes all of the [conditions](#conditions), [condition opcodes](#opcodes), [message flags](#message-flags), [tree hashing](#tree-hashing) functions, [merkle proofs](#merkle-proofs), [list functions](#lists), and [utilities](#utilities).
 
 ## Modules
 
@@ -21,8 +21,9 @@ Everything in the standard library can also be referenced with a path through th
 | `std::conditions`      | The `types`, `opcodes` and `message_flags` modules for conditions.   |
 | `std::tree_hash`       | `tree_hash`, `tree_hash_atom`, and `tree_hash_pair`.                 |
 | `std::curry_tree_hash` | `curry_tree_hash`.                                                   |
+| `std::list`            | `length`, `reverse`, and `contains`.                                 |
 | `std::merkle`          | `MerkleProof`, `calculate_merkle_root`, and `simplify_merkle_proof`. |
-| `std::utils`           | `merge_list` and `deep_equal`.                                       |
+| `std::utils`           | `deep_equal`.                                                        |
 | `std::offer`           | `NotarizedPayment` and `Payment`, for settlement payments in offers. |
 | `std::singleton`       | `SingletonStruct` and the singleton lineage proofs.                  |
 
@@ -38,9 +39,9 @@ fn main(proof: LineageProof) -> Int {
 
 ## Conditions
 
-A puzzle outputs a list of conditions, which tell the blockchain what the spend should do (such as creating coins) and what must be true for the spend to be valid (such as signatures and announcements). The standard library defines a struct for each condition, and the `Condition` type is a union of all of them.
+A puzzle outputs a list of conditions, which tell the blockchain what the spend should do (such as creating coins) and what must be true for the spend to be valid (such as signatures and announcements). The standard library defines them as variants of the `Condition` [enum](/docs/type-system/enums.md), whose discriminants are the condition opcodes.
 
-For example, this puzzle requires a signature on the conditions, and then outputs them:
+The variants are also exported by their own names, so `CreateCoin { ... }` is the same as `Condition::CreateCoin { ... }`. For example, this puzzle requires a signature on the conditions, and then outputs them:
 
 ```rue
 fn main(public_key: PublicKey, conditions: List<Condition>) -> List<Condition> {
@@ -49,45 +50,83 @@ fn main(public_key: PublicKey, conditions: List<Condition>) -> List<Condition> {
 }
 ```
 
-Each struct has an `opcode` field with a [literal type](/docs/type-system/atoms.md#literal-types) and a default value, so you don't need to specify it when creating one, and you can tell the conditions apart with a [type guard](/docs/type-system/guards.md).
+Since each condition is a variant, you don't need to specify its opcode when creating one, and you can tell the conditions apart with a [type guard](/docs/type-system/guards.md) or a [`match`](/docs/match.md). A `match` over a `Condition` has to handle every variant, or have a `_` arm for the rest:
 
-| Struct                        | Fields                                                                |
-| ----------------------------- | --------------------------------------------------------------------- |
-| `Remark`                      | `...rest: Any = nil`                                                  |
-| `AggSigParent`                | `public_key: PublicKey`, `message: Bytes`                             |
-| `AggSigPuzzle`                | `public_key: PublicKey`, `message: Bytes`                             |
-| `AggSigAmount`                | `public_key: PublicKey`, `message: Bytes`                             |
-| `AggSigPuzzleAmount`          | `public_key: PublicKey`, `message: Bytes`                             |
-| `AggSigParentAmount`          | `public_key: PublicKey`, `message: Bytes`                             |
-| `AggSigParentPuzzle`          | `public_key: PublicKey`, `message: Bytes`                             |
-| `AggSigUnsafe`                | `public_key: PublicKey`, `message: Bytes`                             |
-| `AggSigMe`                    | `public_key: PublicKey`, `message: Bytes`                             |
-| `CreateCoin`                  | `puzzle_hash: Bytes32`, `amount: Int`, `...memos: Memos \| nil = nil` |
-| `ReserveFee`                  | `amount: Int`                                                         |
-| `CreateCoinAnnouncement`      | `message: Bytes`                                                      |
-| `AssertCoinAnnouncement`      | `id: Bytes32`                                                         |
-| `CreatePuzzleAnnouncement`    | `message: Bytes`                                                      |
-| `AssertPuzzleAnnouncement`    | `id: Bytes32`                                                         |
-| `AssertConcurrentSpend`       | `coin_id: Bytes32`                                                    |
-| `AssertConcurrentPuzzle`      | `puzzle_hash: Bytes32`                                                |
-| `SendMessage`                 | `mode: Int`, `message: Bytes`, `...receiver: List<Bytes \| Int>`      |
-| `ReceiveMessage`              | `mode: Int`, `message: Bytes`, `...sender: List<Bytes \| Int>`        |
-| `AssertMyCoinId`              | `coin_id: Bytes32`                                                    |
-| `AssertMyParentId`            | `parent_id: Bytes32`                                                  |
-| `AssertMyPuzzleHash`          | `puzzle_hash: Bytes32`                                                |
-| `AssertMyAmount`              | `amount: Int`                                                         |
-| `AssertMyBirthSeconds`        | `seconds: Int`                                                        |
-| `AssertMyBirthHeight`         | `height: Int`                                                         |
-| `AssertEphemeral`             | None                                                                  |
-| `AssertSecondsRelative`       | `seconds: Int`                                                        |
-| `AssertSecondsAbsolute`       | `seconds: Int`                                                        |
-| `AssertHeightRelative`        | `height: Int`                                                         |
-| `AssertHeightAbsolute`        | `height: Int`                                                         |
-| `AssertBeforeSecondsRelative` | `seconds: Int`                                                        |
-| `AssertBeforeSecondsAbsolute` | `seconds: Int`                                                        |
-| `AssertBeforeHeightRelative`  | `height: Int`                                                         |
-| `AssertBeforeHeightAbsolute`  | `height: Int`                                                         |
-| `Softfork`                    | `cost: Int`, `...args: List<Any>`                                     |
+```rue
+fn spent_amount(conditions: List<Condition>) -> Int {
+    for condition in conditions fold total = 0 {
+        match condition {
+            CreateCoin { amount } => total + amount,
+            ReserveFee { amount } => total + amount,
+            _ => total,
+        }
+    }
+}
+
+test fn spent() {
+    let conditions = [
+        CreateCoin { puzzle_hash: sha256("puzzle"), amount: 100 },
+        ReserveFee { amount: 5 },
+        AssertMyAmount { amount: 105 },
+    ];
+    assert spent_amount(conditions) == 105;
+}
+```
+
+The opcode isn't a field of the condition. If you need it, such as to handle raw conditions, cast the condition to a pair and read the first part:
+
+```rue
+fn opcode(condition: Condition) -> Int {
+    let (opcode, _) = condition as (Int, Any);
+    opcode
+}
+
+test fn opcodes() {
+    assert opcode(ReserveFee { amount: 1 }) == RESERVE_FEE;
+}
+```
+
+These are the variants, with their opcodes and fields:
+
+| Variant                       | Opcode | Fields                                                                |
+| ----------------------------- | ------ | --------------------------------------------------------------------- |
+| `Remark`                      | `1`    | `...rest: Any = nil`                                                  |
+| `AggSigParent`                | `43`   | `public_key: PublicKey`, `message: Bytes`                             |
+| `AggSigPuzzle`                | `44`   | `public_key: PublicKey`, `message: Bytes`                             |
+| `AggSigAmount`                | `45`   | `public_key: PublicKey`, `message: Bytes`                             |
+| `AggSigPuzzleAmount`          | `46`   | `public_key: PublicKey`, `message: Bytes`                             |
+| `AggSigParentAmount`          | `47`   | `public_key: PublicKey`, `message: Bytes`                             |
+| `AggSigParentPuzzle`          | `48`   | `public_key: PublicKey`, `message: Bytes`                             |
+| `AggSigUnsafe`                | `49`   | `public_key: PublicKey`, `message: Bytes`                             |
+| `AggSigMe`                    | `50`   | `public_key: PublicKey`, `message: Bytes`                             |
+| `CreateCoin`                  | `51`   | `puzzle_hash: Bytes32`, `amount: Int`, `...memos: Memos \| nil = nil` |
+| `ReserveFee`                  | `52`   | `amount: Int`                                                         |
+| `CreateCoinAnnouncement`      | `60`   | `message: Bytes`                                                      |
+| `AssertCoinAnnouncement`      | `61`   | `id: Bytes32`                                                         |
+| `CreatePuzzleAnnouncement`    | `62`   | `message: Bytes`                                                      |
+| `AssertPuzzleAnnouncement`    | `63`   | `id: Bytes32`                                                         |
+| `AssertConcurrentSpend`       | `64`   | `coin_id: Bytes32`                                                    |
+| `AssertConcurrentPuzzle`      | `65`   | `puzzle_hash: Bytes32`                                                |
+| `SendMessage`                 | `66`   | `mode: Int`, `message: Bytes`, `...receiver: List<Bytes \| Int>`      |
+| `ReceiveMessage`              | `67`   | `mode: Int`, `message: Bytes`, `...sender: List<Bytes \| Int>`        |
+| `AssertMyCoinId`              | `70`   | `coin_id: Bytes32`                                                    |
+| `AssertMyParentId`            | `71`   | `parent_id: Bytes32`                                                  |
+| `AssertMyPuzzleHash`          | `72`   | `puzzle_hash: Bytes32`                                                |
+| `AssertMyAmount`              | `73`   | `amount: Int`                                                         |
+| `AssertMyBirthSeconds`        | `74`   | `seconds: Int`                                                        |
+| `AssertMyBirthHeight`         | `75`   | `height: Int`                                                         |
+| `AssertEphemeral`             | `76`   | None                                                                  |
+| `AssertSecondsRelative`       | `80`   | `seconds: Int`                                                        |
+| `AssertSecondsAbsolute`       | `81`   | `seconds: Int`                                                        |
+| `AssertHeightRelative`        | `82`   | `height: Int`                                                         |
+| `AssertHeightAbsolute`        | `83`   | `height: Int`                                                         |
+| `AssertBeforeSecondsRelative` | `84`   | `seconds: Int`                                                        |
+| `AssertBeforeSecondsAbsolute` | `85`   | `seconds: Int`                                                        |
+| `AssertBeforeHeightRelative`  | `86`   | `height: Int`                                                         |
+| `AssertBeforeHeightAbsolute`  | `87`   | `height: Int`                                                         |
+| `Softfork`                    | `90`   | `cost: Int`, `...args: List<Any>`                                     |
+
+A condition without fields, such as `AssertEphemeral`, is declared with empty braces, so it's written as `AssertEphemeral {}`, like the others.
 
 The memos of a `CreateCoin` condition are wrapped in a `Memos` struct, which has a single `value: Any` field:
 
@@ -158,12 +197,32 @@ fn main(mod_hash: Bytes32, owner: Bytes32) -> Bytes32 {
 | `calculate_merkle_root(path: Int, current_hash: Bytes32, additional_steps: List<Bytes32>) -> Bytes32` | Computes the root of a merkle tree, given the hash of a node and its siblings.     |
 | `simplify_merkle_proof(leaf: Bytes32, proof: MerkleProof) -> Bytes32`                                 | Computes the root of a merkle tree, given a leaf value and a proof.                |
 
+## Lists
+
+| Function                                           | Description                                                       |
+| -------------------------------------------------- | ----------------------------------------------------------------- |
+| `length<T>(list: List<T>) -> Int`                  | Returns the number of items in the list.                          |
+| `reverse<T>(list: List<T>) -> List<T>`             | Returns the items of the list in the opposite order.              |
+| `contains(list: List<Bytes>, item: Bytes) -> Bool` | Returns whether any item of the list is equal to `item`, by `==`. |
+
+Each of these walks the whole list, so its cost grows with the length of the list. `contains` compares atoms, so it works with lists of `Bytes`, `Bytes32` and `String`, but a list of `Int` needs a cast, as in `contains(values as List<Bytes>, 2 as Bytes)`. Lists are joined with [spreads](/docs/type-system/pairs.md#lists), as in `[...a, ...b]`, and most other list operations are a [`for` expression](/docs/loops.md).
+
+```rue
+test fn lists() {
+    let hashes = [sha256("a"), sha256("b")];
+    assert length(hashes) == 2;
+    assert contains(hashes, sha256("b"));
+    assert deep_equal(reverse([1, 2, 3]), [3, 2, 1]);
+}
+```
+
+If your program defines its own function with the same name as one of these, such as `contains`, its own function is used instead.
+
 ## Utilities
 
-| Function                                           | Description                                                         |
-| -------------------------------------------------- | ------------------------------------------------------------------- |
-| `merge_list<T>(a: List<T>, b: List<T>) -> List<T>` | Returns a list with the items of `a`, followed by those of `b`.     |
-| `deep_equal(a: Any, b: Any) -> Bool`               | Returns whether two values are structurally equal, including pairs. |
+| Function                             | Description                                                         |
+| ------------------------------------ | ------------------------------------------------------------------- |
+| `deep_equal(a: Any, b: Any) -> Bool` | Returns whether two values are structurally equal, including pairs. |
 
 ## Offers
 
