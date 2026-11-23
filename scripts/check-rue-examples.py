@@ -16,6 +16,9 @@ The info string after ```rue changes what's checked:
 - ```rue warn    The block deliberately shows a warning, so warnings are allowed.
 - ```rue nofmt   Don't check the formatting. Only use this where `rue fmt`'s output is clearly worse
                  to read, and say why in a comment next to the block.
+- ```rue hard_fork_2
+                 Compile and test the block with `--hard-fork-2`, for code that uses builtins that
+                 are only available after hard fork 2, such as `modpow` and `keccak256`.
 
 The examples are written against the Rue version in `.rue-version`, and the CLI being used must be
 that version.
@@ -38,7 +41,7 @@ ROOT = Path(__file__).resolve().parent.parent
 DOCS = ROOT / "docs"
 VERSION_FILE = ROOT / ".rue-version"
 FENCE = re.compile(r"^(\s*)```rue\b(.*)$")
-MODES = {"ignore", "error", "warn", "nofmt"}
+MODES = {"ignore", "error", "warn", "nofmt", "hard_fork_2"}
 
 
 def parse_args(argv):
@@ -107,7 +110,9 @@ def check(rue, modes, code, tmp):
     file = Path(tmp) / "main.rue"
     file.write_text(code)
 
-    status, output = run(rue, ["test", "-A", "unused", "main.rue"], tmp)
+    flags = ["-A", "unused", *(["--hard-fork-2"] if "hard_fork_2" in modes else [])]
+
+    status, output = run(rue, ["test", *flags, "main.rue"], tmp)
     errors = diagnostics(output, "Error")
     warnings = diagnostics(output, "Warning")
 
@@ -121,7 +126,7 @@ def check(rue, modes, code, tmp):
         problems.extend(warnings)
 
     if not problems and re.search(r"\bfn\s+main\b", code):
-        status, output = run(rue, ["build", "-A", "unused", "main.rue"], tmp)
+        status, output = run(rue, ["build", *flags, "main.rue"], tmp)
         if status != 0:
             problems.append(f"`rue build` failed:\n{output}")
 

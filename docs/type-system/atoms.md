@@ -23,19 +23,53 @@ There are multiple types of atoms:
 
 ## Literals
 
-| Literal | Example           | Type                                                                         |
-| ------- | ----------------- | ---------------------------------------------------------------------------- |
-| Integer | `42`, `1_000_000` | `Int`                                                                        |
-| Hex     | `0xCAFE_F00D`     | `Bytes` (or `Bytes32`, `PublicKey`, or `Signature`, depending on the length) |
-| Binary  | `0b101010`        | `Int`                                                                        |
-| Octal   | `0o52`            | `Int`                                                                        |
-| String  | `"Hello, world!"` | `String`                                                                     |
-| Boolean | `true`, `false`   | `Bool`                                                                       |
-| Nil     | `nil`             | `nil`                                                                        |
+| Literal | Example                              | Type                                                                         |
+| ------- | ------------------------------------ | ---------------------------------------------------------------------------- |
+| Integer | `42`, `1_000_000`                    | `Int`                                                                        |
+| Hex     | `0xCAFE_F00D`                        | `Bytes` (or `Bytes32`, `PublicKey`, or `Signature`, depending on the length) |
+| Binary  | `0b101010`                           | `Int`                                                                        |
+| Octal   | `0o52`                               | `Int`                                                                        |
+| String  | `"Hello, world!"`, `'Hello, world!'` | `String`                                                                     |
+| Boolean | `true`, `false`                      | `Bool`                                                                       |
+| Nil     | `nil`                                | `nil`                                                                        |
 
 Underscores can be used anywhere in a number to make it easier to read. Hex literals with an odd number of digits are padded with a leading zero, so `0x1` is the same as `0x01`.
 
+A hex literal is bytes rather than an integer, so it can't be assigned to an `Int` without a cast. The compiler suggests writing the number instead, since `0x05 as Int` is just `5`.
+
 Strictly speaking, the type of a literal is more specific than shown here. See [Literal Types](#literal-types) below.
+
+### Strings
+
+A string can be written with either double quotes (`"..."`) or single quotes (`'...'`), and both mean the same thing. [`rue fmt`](/docs/formatting.md) uses double quotes unless single quotes would need fewer escapes.
+
+Strings support the same escape sequences as Rust:
+
+| Escape             | Meaning                                                               |
+| ------------------ | --------------------------------------------------------------------- |
+| `\n`               | Line feed                                                             |
+| `\r`               | Carriage return                                                       |
+| `\t`               | Tab                                                                   |
+| `\0`               | The zero byte                                                         |
+| `\\`               | Backslash                                                             |
+| `\"`, `\'`         | Double or single quote                                                |
+| `\x41`             | An ASCII character, from `\x00` to `\x7f`                             |
+| `\u{1F600}`        | A Unicode code point, with 1 to 6 hex digits                          |
+| `\` at end of line | Skips the line break and any whitespace at the start of the next line |
+
+Any other character after a backslash is an error. Since strings are UTF-8, a `\u{...}` escape can produce more than one byte, and `\x` is limited to ASCII. To write arbitrary bytes, use a hex literal instead.
+
+```rue
+fn quote(name: String) -> String {
+    'say "' + name + '"\n'
+}
+
+test fn escapes() {
+    assert quote("hi") == 'say "hi"\x0a';
+    assert "\u{1F600}".length == 4;
+    assert "a\tb\\c".length == 5;
+}
+```
 
 ## Atom
 
@@ -150,6 +184,42 @@ fn main(value: Bytes) -> Int {
 
 This compiles to the CLVM `strlen` operator.
 
+## Indexing and Slicing
+
+You can read a single byte of an atom by its index, or a range of bytes with a slice. Indexes start at `0`, and a slice includes its start but not its end:
+
+| Expression          | Result                               |
+| ------------------- | ------------------------------------ |
+| `value[i]`          | The byte at index `i`                |
+| `value[start..end]` | The bytes from `start` up to `end`   |
+| `value[start..]`    | The bytes from `start` to the end    |
+| `value[..end]`      | The bytes from the start up to `end` |
+
+The result is always bytes, including for a single byte, which is a `Bytes` value of length 1 rather than an `Int`. Indexing or slicing a `String` gives a `String`, and any other atom type gives `Bytes`. The indexes must be `Int` values.
+
+```rue
+test fn slicing() {
+    let greeting = "hello, world";
+    let word: String = greeting[..5];
+    assert word == "hello";
+    assert greeting[7..] == "world";
+    assert greeting[4] == "o";
+
+    let bytes = 0xcafef00d;
+    assert bytes[1..3] == 0xfef0;
+}
+```
+
+Both compile to the CLVM `substr` operator, which raises an error at runtime if an index is negative or past the end of the value, or if the start of a slice is after its end. A slice must have at least a start or an end, since `value[..]` would be the whole value.
+
+Lists can't be indexed, since finding an item would walk the list and hide the cost of doing so. [Destructure](/docs/bindings.md#destructuring) the list or use `.first` and `.rest` instead.
+
+## Never
+
+`Never` is the type with no values. It's not an atom, but it's useful alongside them: an expression of type `Never` never finishes, such as a `raise` or a call to a function that always raises. Since no value ever reaches it, `Never` can be assigned to every other type. See [Functions That Never Return](/docs/functions.md#functions-that-never-return).
+
+Nothing can be assigned or cast to `Never`, and a value can't be checked against it with a type guard. A list of `Never` (`List<Never>`) can only be empty, so it can be assigned to any other list type.
+
 ## Representation
 
 Because the various atom types differ solely by semantic meaning, there can be overlap in their CLVM representation. This is important to know when you need to differentiate between different values at runtime.
@@ -180,4 +250,4 @@ fn main(mode: Mode) -> Bool {
 }
 ```
 
-It allows for more efficient type checking, disambiguation of values at runtime, and preventing certain logic errors at compile time. For example, the `opcode` field of each [condition](/docs/standard-library.md#conditions) in the standard library has a literal type, which is how the type of a condition can be narrowed with a type guard.
+It allows for more efficient type checking, disambiguation of values at runtime, and preventing certain logic errors at compile time. For example, a struct field with a literal type can tell structs apart in a [type guard](/docs/type-system/guards.md), and the [discriminants of enum variants](/docs/type-system/enums.md) work the same way, which is how the type of a [condition](/docs/standard-library.md#conditions) can be narrowed.

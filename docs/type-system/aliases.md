@@ -58,3 +58,14 @@ However, a type must pass through a pair before it refers to itself. A type that
 // Error: Type `Value` refers to itself without passing through a pair
 type Value = Value | Int;
 ```
+
+This includes a type that refers to itself as the generic argument of another alias, if that alias doesn't put it inside of a pair either:
+
+```rue error
+type Id<T> = T;
+
+// Error: Type `Forward` refers to itself without passing through a pair
+type Forward = Id<Forward>;
+```
+
+A generic alias also can't refer to itself with generic arguments built from its own type parameters, such as `type Nested<T> = (T, Nested<(T, T)>) | nil;`, since the type would keep growing each time it refers back.

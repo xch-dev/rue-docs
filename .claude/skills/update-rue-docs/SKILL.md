@@ -90,6 +90,8 @@ Conventions:
   - ` ```rue warn ` for a block that deliberately shows a warning.
   - ` ```rue nofmt ` only where `rue fmt`'s output is clearly worse, with an MDX comment
     (`{/* ... */}`) next to it saying why. Remove these when the formatter is fixed.
+  - ` ```rue hard_fork_2 ` for code that uses builtins only available after hard fork 2 (such as
+    `modpow` and `keccak256`). The block is compiled and tested with `--hard-fork-2`.
 - If an example shows output (CLI output in a ` ```bash ` block, a compiled program, a hash), run it
   with the target's CLI and paste the real output.
 - Link other pages with `/docs/<path>.md#anchor`. `pnpm build` fails on broken links and anchors.

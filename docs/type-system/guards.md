@@ -17,6 +17,8 @@ fn main(bytes: Bytes) -> Bytes32 {
 
 After this assertion, the type of `bytes` is now `Bytes32` since it has been checked.
 
+A [`match`](/docs/match.md) expression makes the same checks as a type guard, and narrows the value in each of its arms the same way.
+
 However, if you negate a type guard with the `!` operator or use the value in an else branch, it will remain the `Bytes` type since there was no union that could be narrowed:
 
 ```rue
@@ -35,7 +37,11 @@ The compiler emits the minimum set of checks needed to verify that the value on 
 3. The exact value of an atom, for [literal types](/docs/type-system/atoms.md#literal-types), such as `value is 42` or `value is nil`.
 4. Each of the above for the `first` and `rest` of a pair, recursively.
 
-Since a struct is a list at runtime, checking for a struct checks its structure and any fields with literal types. For example, every [condition](/docs/standard-library.md#conditions) in the standard library has a literal `opcode`, so if you already know that a value is a `Condition`, checking whether it's a `CreateCoin` only needs to compare the opcode to `51`.
+Since a struct is a list at runtime, checking for a struct checks its structure and any fields with literal types. For example, every [condition](/docs/standard-library.md#conditions) in the standard library is a variant of an [enum](/docs/type-system/enums.md) that starts with its opcode, so if you already know that a value is a `Condition`, checking whether it's a `CreateCoin` only needs to compare the opcode to `51`.
+
+The value on the left is compiled on its own, without the type on the right being expected of it. That type is what the value is checked against, so it can't also be where the value gets its type from. For example, `unchecked_cast(value) is Bytes32` is an error, since nothing says what type `unchecked_cast` should return. Write `unchecked_cast::<Any>(value) is Bytes32` instead, which checks the value at runtime.
+
+If the check is already decided at compile time, but evaluating the value could fail (such as a call to a function that raises), the value is still evaluated, so the failure isn't skipped.
 
 ## Narrowing
 
@@ -60,9 +66,10 @@ The else branch removes `CreateCoin` as a possibility, narrowing it down to the 
 The narrowed type applies anywhere the result of the guard is known:
 
 1. In the branches of an `if` expression.
-2. After an `if` statement that returns or raises, using the opposite of the condition.
-3. After an `assert` statement.
-4. On the right side of `&&` and `||`, such as `value is Int && value > 5`.
+2. In the arms of a [`match`](/docs/match.md).
+3. After an `if` or `match` statement, using what's known in the branches that don't return or raise.
+4. After an `assert` statement.
+5. On the right side of `&&` and `||`, such as `value is Int && value > 5`.
 
 Guards can be combined with `!`, `&&`, `||`, `&`, and `|`, and the compiler will narrow each value based on what's known in each branch:
 
@@ -101,12 +108,46 @@ fn sum(point: Point) -> Int {
 
 This works for nested fields as well, such as `outer.inner.x`.
 
+### Pairs
+
+A guard can also check the parts of a pair at once, such as `pair is (CreateCoin, Int)`. When the guard is false, the compiler works out exactly which combinations of the parts are left, so you can handle them one at a time:
+
+```rue
+fn fees(pair: (CreateCoin | ReserveFee, CreateCoin | ReserveFee)) -> Int {
+    if pair is (CreateCoin, CreateCoin) {
+        return 0;
+    }
+
+    if pair is (ReserveFee, ReserveFee) {
+        return pair.first.amount + pair.rest.amount;
+    }
+
+    if pair is (ReserveFee, CreateCoin) {
+        return pair.first.amount;
+    }
+
+    // The only combination left is `(CreateCoin, ReserveFee)`
+    pair.rest.amount
+}
+```
+
+This is also how a [`match`](/docs/match.md#pairs) over every combination of a pair's parts is known to be exhaustive.
+
+### Semantics
+
+Narrowing only changes what's known about a value's structure, not its semantics. For example, if `x` is an `Int`, `assert x is Bytes32;` checks that it's 32 bytes long, but `x` is still an `Int` afterward, so `x + x` is an addition rather than a concatenation. The same goes for `(x as Bytes) is Bytes32`, which checks the cast value but narrows `x` itself. Likewise, a pair that's checked against a struct takes on the struct's fields, but not the struct itself.
+
+To treat the value as the type you checked for, [cast](/docs/type-system/casting.md#casting-after-a-guard) it after the guard, such as `x as Bytes32`. The cast is allowed, since the guard has already checked the structure.
+
+A value of type `Any` (or `Atom`) has no semantics of its own, so it narrows to the type it's checked against.
+
 ## Lints
 
 The compiler warns about type guards that don't do anything useful:
 
 - `unnecessary_guard` reports guards where the value is already known to be of the type, so a check isn't needed.
 - `indistinguishable_guard` reports guards that are always true at runtime, even though the types are different. For example, `value is Int` when `value` is `Int | nil` can never be false, since `nil` and `0` have the same runtime representation.
+- `imprecise_narrowing` reports guards (and `match` arms) on a struct with so many combinations of field types left over that the compiler merges them, which leaves the struct's fields wider than they could be afterward. Check fewer combinations at once to avoid it.
 
 ## Limitations
 
@@ -116,9 +157,9 @@ Some types can't be checked at runtime. Using them on the right side of a type g
 
 Rue supports [higher-order functions](https://en.wikipedia.org/wiki/Higher-order_function), which means functions can be passed around freely as values. As such, it's possible to express [functions as types](/docs/functions.md#function-types).
 
-However, there's no way to know at runtime whether or not a value fits the definition of a given function type. Any value _could_ match the type, but not every value _does_ match the type.
+However, there's no way to know at runtime whether or not a value fits the definition of a given function type. Any value _could_ match the type, but not every value _does_ match the type. On top of that, the same function is represented differently in debug and release builds, so a check that looked at a function value could behave differently between them.
 
-Due to this, it is **not possible** to check if a value is a function, or to narrow union types that contain function variants.
+Due to this, a type guard (or `match` arm) that would have to look at a function value is an error. This includes checking for `nil` in a union such as `(fn() -> Int) | nil`. A check that never has to look at the function is still allowed, such as `value is nil` when `value` is `(fn() -> Int, nil) | nil`, since telling a pair apart from `nil` doesn't depend on what's inside the pair.
 
 ### Recursive Types
 
@@ -130,9 +171,11 @@ However, you can check a recursive type against a non-recursive one, such as `li
 
 A [generic type](/docs/type-system/generics.md) parameter such as `T` could be any type, so there's no way to know what to check.
 
-### Deeply Nested Types
+### Large Types
 
-The compiler limits how deeply nested a type can be checked, to avoid generating an excessive amount of code. A very long list type such as `[Int, Int, ..., Int]` can't be checked all at once.
+The compiler limits how deeply nested a type can be checked, and how large the check can be, to avoid generating an excessive amount of code. A very long list type such as `[Int, Int, ..., Int]` can't be checked all at once, and neither can a type whose check would be more than 10,000 nodes, such as one that nests a pair of itself many levels deep. Checks for typical types are under a hundred nodes.
+
+Separately, comparing two very large or deeply recursive types can be too much work for the type checker, in which case it stops with an error such as "Comparing `A` to `B` is too complex", rather than taking too long to compile.
 
 ### Overlapping Values
 

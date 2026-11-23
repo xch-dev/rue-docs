@@ -37,7 +37,15 @@ cargo install clvm_tools_rs
 
 ## Editor Support
 
-Rue has a language server, which provides diagnostics as you type, hover information, go to definition, find references, completions, formatting, and quick fixes for many lints.
+Rue has a language server, which provides:
+
+- Diagnostics as you type, and quick fixes for many lints.
+- Hover information, go to definition, and find references.
+- Renaming functions, constants, bindings, structs, enums, fields, modules and other symbols across the project, including the files of file modules.
+- Completions, and signature help that shows the parameters of a call or the fields of a struct initializer as you type them, with any inferred generic arguments.
+- Inlay hints for the inferred types of bindings and lambda parameters, inferred generic arguments, and the names of the parameters that arguments are passed to.
+- Document outlines and workspace symbol search.
+- [Formatting](/docs/formatting.md).
 
 You can install it with this command:
 
@@ -65,6 +73,20 @@ Then, you can install the [Rue extension](https://open-vsx.org/extension/Rigidit
 :::tip
 Any editor that supports Open VSX and VSCode extensions will likely support this. Other editors can run `rue-lsp` directly, since it communicates over the standard [Language Server Protocol](https://microsoft.github.io/language-server-protocol/).
 :::
+
+Each kind of inlay hint can be turned off with the language server's `inlayHints` setting, which has the keys `types`, `genericArguments` and `parameterNames` (all `true` by default). It's read from the initialization options and from configuration change notifications, either directly or under `rue`:
+
+```json
+{
+  "rue": {
+    "inlayHints": {
+      "types": true,
+      "genericArguments": true,
+      "parameterNames": false
+    }
+  }
+}
+```
 
 ## Hello World
 

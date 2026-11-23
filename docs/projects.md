@@ -21,7 +21,7 @@ my-project
     └── main.rue
 ```
 
-Every `.rue` file inside of the `puzzles` directory (including in subdirectories) is part of the project, and can reference the others as [modules](/docs/modules.md).
+Every `.rue` file inside of the `puzzles` directory (including in subdirectories) is part of the project, and can reference the others as [modules](/docs/modules.md). A path that starts with `project::` starts at the `puzzles` directory, from any file in the project.
 
 ## Finding the Project
 
@@ -37,29 +37,33 @@ The `Rue.toml` file configures the compiler, the formatter, and which lints are 
 
 ```toml
 [compiler]
-version = "0.12.0"
+version = "0.13.0"
 entrypoint = "puzzles"
 
 [formatter]
 max_width = 100
 indent_width = 4
+single_quote = false
 ```
 
 ### Compiler
 
-| Key          | Default     | Description                                                                                                                                                                            |
-| ------------ | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `version`    | Not set     | The version of Rue that the project is written for. If it's set and doesn't match the installed version of the CLI, `rue build` fails (`rue test` doesn't check it).                   |
-| `entrypoint` | `"puzzles"` | The directory (or file) containing the source code, relative to `Rue.toml`.                                                                                                            |
-| `std`        | `true`      | Whether to include the [standard library](/docs/standard-library.md). Set this to `false` to only have access to [builtins](/docs/builtins.md).                                        |
-| `dist_dir`   | Not set     | The directory that `rue build --all` writes compiled programs to, relative to the directory the command is run from. If it's not set, each program is written next to its source file. |
+| Key              | Default     | Description                                                                                                                                                                            |
+| ---------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `version`        | Not set     | The version of Rue that the project is written for. If it's set and doesn't match the installed version of the CLI, `rue build` and `rue test` fail.                                   |
+| `entrypoint`     | `"puzzles"` | The directory (or file) containing the source code, relative to `Rue.toml`.                                                                                                            |
+| `std`            | `true`      | Whether to include the [standard library](/docs/standard-library.md). Set this to `false` to only have access to [builtins](/docs/builtins.md).                                        |
+| `dist_dir`       | Not set     | The directory that `rue build --all` writes compiled programs to, relative to the directory the command is run from. If it's not set, each program is written next to its source file. |
+| `operand_limits` | `false`     | Target CLVM with the `LIMITS` flag, which mainnet enforces until hard fork 2. See [Targeting Mainnet](#targeting-mainnet).                                                             |
+| `hard_fork_2`    | `false`     | Target mainnet as it will be after hard fork 2. See [Targeting Mainnet](#targeting-mainnet).                                                                                           |
 
 ### Formatter
 
-| Key            | Default | Description                                              |
-| -------------- | ------- | -------------------------------------------------------- |
-| `max_width`    | `100`   | The maximum width of a line before it's broken up.       |
-| `indent_width` | `4`     | The number of spaces used for each level of indentation. |
+| Key            | Default | Description                                                                            |
+| -------------- | ------- | -------------------------------------------------------------------------------------- |
+| `max_width`    | `100`   | The maximum width of a line before it's broken up.                                     |
+| `indent_width` | `4`     | The number of spaces used for each level of indentation.                               |
+| `single_quote` | `false` | Whether strings are written with `'` rather than `"` when neither needs fewer escapes. |
 
 See [Formatting](/docs/formatting.md) for more details.
 
@@ -74,6 +78,26 @@ unused_binding = "allow"
 ```
 
 See [Lints](/docs/lints.md) for the list of lints and how their levels are resolved.
+
+## Targeting Mainnet
+
+The CLVM that Chia mainnet runs changes at hard fork 2, so the compiler has two options for choosing which version of it a project targets. Both are off by default, and can be turned on in the `[compiler]` section, or for a single command with `--operand-limits` or `--hard-fork-2` (a flag can't turn off an option that `Rue.toml` turns on). Setting both is an error, since hard fork 2 removes `LIMITS`.
+
+```toml
+[compiler]
+entrypoint = "puzzles"
+operand_limits = true
+```
+
+By default, programs target CLVM without the `LIMITS` flag. Until hard fork 2, mainnet runs programs with `LIMITS`, which makes some operators fail when an operand is too long:
+
+- `*` fails if an operand is longer than 256 bytes, or the running product gets longer than 1024 bytes.
+- `/`, `%` and `divmod` fail if the dividend is longer than 256 bytes, or the divisor is longer than 1024 bytes.
+- `g1_multiply` and `g2_multiply` fail if the scalar is longer than 1024 bytes.
+
+Typical puzzles are far from these limits, since amounts are at most 8 bytes and hashes are 32. But if your operands could be that long, turn on `operand_limits`. The compiler then treats these operators as able to fail, so a release build fails under `LIMITS` exactly when the debug build does, and `rue test` (and `rue debug`, when it's run in the project) runs programs with `LIMITS`, so they fail where mainnet would. See [Operand Limits](/docs/builtins.md#operand-limits). Without it, a program can pass its tests and still fail on mainnet today, and the optimizer can make a release build fail where the debug build succeeds (or the other way around), by folding constants into longer operands, for example. Constants are evaluated without `LIMITS` either way, since they're never run on chain.
+
+`hard_fork_2` targets mainnet as it will be after hard fork 2. It allows the `modpow` and `keccak256` builtins, which are errors without it, compiles `secp256k1_verify` and `secp256r1_verify` to their shorter opcodes, and runs and optimizes programs with the new cost model, in `rue test` (and `rue debug`, when it's run in the project) as well. This changes the compiled program, and so its puzzle hash, for programs that use the secp operators or `keccak256_verify`, and since the optimizer folds constants and compares costs for the target, it can change the output of other programs too. A program compiled with it can fail on mainnet until hard fork 2 activates. Before then, use [`keccak256_verify`](/docs/builtins.md#keccak256_verify) to check a Keccak-256 hash.
 
 ## Entrypoints
 

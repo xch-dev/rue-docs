@@ -8,6 +8,8 @@ There are a number of built-in types, functions, and constants. These are intrin
 
 Most builtin functions compile directly to a CLVM operator. They can only be called directly, rather than being used as a value.
 
+A few builtins depend on which version of mainnet you target. `modpow` and `keccak256` are only available after hard fork 2, so they're an error unless the `hard_fork_2` [compiler option](/docs/projects.md#targeting-mainnet) is on (`hard_fork_2 = true` in `Rue.toml`, or `--hard-fork-2`). Until hard fork 2, mainnet also limits the length of the operands of some arithmetic builtins, which the `operand_limits` option targets (see [Operand Limits](#operand-limits)).
+
 ## Types
 
 You can click on each of these types to go to their corresponding page and learn more:
@@ -24,9 +26,10 @@ You can click on each of these types to go to their corresponding page and learn
 10. [**R1Signature**](/docs/type-system/atoms.md#r1signature)
 11. [**Int**](/docs/type-system/atoms.md#int)
 12. [**Bool**](/docs/type-system/atoms.md#bool)
-13. [**Any**](/docs/type-system/pairs.md#any)
-14. [**List**](/docs/type-system/pairs.md#lists)
-15. [**AlternatingList**](/docs/type-system/pairs.md#alternating-lists)
+13. [**Never**](/docs/type-system/atoms.md#never)
+14. [**Any**](/docs/type-system/pairs.md#any)
+15. [**List**](/docs/type-system/pairs.md#lists)
+16. [**AlternatingList**](/docs/type-system/pairs.md#alternating-lists)
 
 ## Constants
 
@@ -71,21 +74,36 @@ This saves CLVM cost compared to concatenating the values first, since the `sha2
 
 ### `sha256_inline`
 
-The same as `sha256`, but the hash is calculated at compile time if the value is constant, and the result is inserted into the program. Its use is discouraged (because hard coding 32 bytes is costly in CLVM) unless you have a very large constant value that you want to avoid hashing at runtime. See also [Const Expressions](/docs/constants.md#const-expressions).
+The same as `sha256`, but it takes a single value rather than a spread, and the hash is calculated at compile time if the value is constant, and the result is inserted into the program. Its use is discouraged (because hard coding 32 bytes is costly in CLVM) unless you have a very large constant value that you want to avoid hashing at runtime. See also [Const Expressions](/docs/constants.md#const-expressions).
 
 ### `keccak256`
 
 Calculates the [Keccak-256](https://en.wikipedia.org/wiki/SHA-3) hash of the bytes provided. Like `sha256`, it supports the spread syntax.
 
-```rue
+```rue hard_fork_2
 fn main() -> Bytes32 {
     keccak256("hello")
 }
 ```
 
+Mainnet only has a `keccak256` operator after hard fork 2, so this needs the `hard_fork_2` [compiler option](/docs/projects.md#targeting-mainnet). Without it, use [`keccak256_verify`](#keccak256_verify) to check a hash instead.
+
 ### `keccak256_inline`
 
-The same as `keccak256`, but calculated at compile time if the value is constant, like `sha256_inline`.
+The same as `keccak256`, but it takes a single value rather than a spread, and it's calculated at compile time if the value is constant, like `sha256_inline`. It also needs `hard_fork_2`, even when the value is constant.
+
+### `keccak256_verify`
+
+Raises an error unless the Keccak-256 hash of a value is the given hash, and returns `nil` otherwise. Like the [verifications](#verifications), it can be called as a statement:
+
+```rue
+fn main(value: Bytes, hash: Bytes32) -> Bytes {
+    keccak256_verify(value, hash);
+    value
+}
+```
+
+Unlike `keccak256`, this works before hard fork 2, since it's compiled to a check inside of a softfork guard, which mainnet can already run. With `hard_fork_2`, it's still compiled inside the softfork guard, so `assert keccak256(value) == hash;` does the same check more directly, and the `needless_keccak256_verify` [lint](/docs/lints.md) suggests writing it that way. The lint is allowed by default, and warns by default when `hard_fork_2` is on.
 
 ### `coinid`
 
@@ -109,17 +127,7 @@ fn main(list: List<Bytes>) -> Bytes {
 }
 ```
 
-### `substr`
-
-Returns a substring of a byte value, given a start index and an optional end index. If the end index is omitted, it defaults to the length of the value. If either index is out of bounds, this will raise an error.
-
-```rue
-fn main() -> Bytes {
-    substr("hello", 1, 4)
-}
-```
-
-This would return `"ell"`.
+To get a single byte or a range of bytes out of a value, index or slice it, such as `value[0]` or `value[1..4]`. See [Indexing and Slicing](/docs/type-system/atoms.md#indexing-and-slicing).
 
 ## Arithmetic
 
@@ -136,9 +144,9 @@ fn main() -> Int {
 
 ### `modpow`
 
-Computes `(base ^ exponent) % modulus`. The base may be negative, the exponent must not be, and the modulus must not be `0`:
+Computes `(base ^ exponent) % modulus`. The base may be negative, the exponent must not be, and the modulus must not be `0`. Mainnet only enables `modpow` after hard fork 2, so it needs the `hard_fork_2` [compiler option](/docs/projects.md#targeting-mainnet):
 
-```rue
+```rue hard_fork_2
 fn main() -> Int {
     modpow(5, 50, 45)
 }
@@ -155,6 +163,19 @@ fn main(list: List<Int>) -> Int {
 ```
 
 The `difference` of a list subtracts each of the rest of the values from the first one. The `sum` and `difference` of an empty list are `0`, and the `product` of an empty list is `1`.
+
+These builtins, like `concat`, `any`, `all`, `g1_sum`, `g1_difference`, `g2_sum` and `g2_difference`, take the list itself as their only argument, so spreading it into them (`sum(...values)`) is an error. Pass the list as it is (`sum(values)`), or build one if you have separate values (`sum([first, ...rest])`). The compiler suggests both fixes.
+
+### Operand Limits
+
+Until hard fork 2, mainnet runs programs with a `LIMITS` flag, which makes some operators fail when an operand is too long (counting any leading zero bytes):
+
+- `*` and `product` fail if an operand is longer than 256 bytes, or if the running product is longer than 1024 bytes.
+- `/`, `%` and `divmod` fail if the dividend is longer than 256 bytes, or the divisor is longer than 1024 bytes.
+- `modpow` fails if the base, exponent or modulus is longer than 256 bytes.
+- Multiplying a `PublicKey` or `Signature` by an `Int` (`g1_multiply` and `g2_multiply` in CLVM) fails if the scalar is longer than 1024 bytes.
+
+By default, Rue targets CLVM without `LIMITS`, so these operators are treated as unable to fail because of an operand's length (and `/`, `%` and `divmod` only fail when dividing by zero). A program compiled that way can pass its tests and still fail on mainnet before hard fork 2 when an operand exceeds a limit, and the optimizer may change whether a release build hits a limit. If your puzzle can be given long operands, turn on the `operand_limits` [compiler option](/docs/projects.md#targeting-mainnet) (`operand_limits = true` in `Rue.toml`, or `--operand-limits`). Then release builds fail under `LIMITS` exactly when debug builds do, and `rue test` runs with `LIMITS`. It can't be combined with `hard_fork_2`, which removes `LIMITS`.
 
 ### `any`, `all`
 
@@ -276,3 +297,5 @@ fn main(public_key: R1PublicKey, message_hash: Bytes32, signature: R1Signature) 
     secp256r1_verify(public_key, message_hash, signature);
 }
 ```
+
+With the `hard_fork_2` [compiler option](/docs/projects.md#targeting-mainnet), `secp256k1_verify` and `secp256r1_verify` are compiled to the 1-byte opcodes that hard fork 2 adds for them. Otherwise, they're compiled to the 4-byte opcodes that encode their cost. Both behave the same, but the 1-byte opcodes make the program shorter.
